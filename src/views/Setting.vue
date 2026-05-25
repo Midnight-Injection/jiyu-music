@@ -966,6 +966,7 @@ import type { BaseplateStyle, FontFamilyPreset } from '../types/settings'
 import { getPlaybackSourceDisplayInfo, getChannelDisplayName } from '../lib/playbackSource'
 import {
   clearPlaybackSourceCache,
+  forgetSuccessfulSource,
   getPlaybackSourceCacheRecord,
 } from '../modules/playback/sourceSuccessCache'
 import {
@@ -977,6 +978,7 @@ import {
   getSourceHealthRecordsSnapshot,
 } from '../modules/source-health/store'
 import { resolveMusicChannel } from '../modules/playback/types'
+import { clearCachedCustomResolution } from '../modules/playback/resolvers/customSourceResolver'
 
 const settingsStore = useSettingsStore()
 const themeStore = useThemeStore()
@@ -1444,7 +1446,23 @@ async function setActiveUserSource(id: string) {
     message.error('请先启用该自定义音源')
     return
   }
+
+  const previousId = settingsStore.settings.activeUserSourceId
   settingsStore.updateSetting('activeUserSourceId', id)
+
+  if (previousId && previousId !== id && player.currentMusic) {
+    clearCachedCustomResolution(
+      player.currentMusic,
+      settingsStore.settings.audioQuality,
+      previousId,
+    )
+    forgetSuccessfulSource(
+      player.currentMusic,
+      settingsStore.settings.audioQuality,
+      previousId,
+    )
+  }
+
   message.success('当前自定义音源已切换')
 }
 

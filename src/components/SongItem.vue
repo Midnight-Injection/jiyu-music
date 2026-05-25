@@ -127,24 +127,30 @@ function formatDuration(seconds: number): string {
   display: flex;
   align-items: center;
   padding: 11px 14px;
-  border-radius: 20px;
-  transition: background-color 0.2s, transform 0.2s ease, border-color 0.2s ease;
+  border-radius: var(--radius-xl);
+  transition:
+    background-color var(--transition-fast),
+    transform var(--transition-fast),
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
   cursor: pointer;
   border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.06);
 
   &:hover,
   &.is-hover {
-    background-color: rgba(255, 255, 255, 0.13);
+    background-color: rgba(255, 255, 255, 0.11);
     border-color: rgba(255, 255, 255, 0.16);
     transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
   }
 
   &.is-playing {
-    border-color: rgba(255, 255, 255, 0.18);
+    border-color: color-mix(in srgb, var(--primary-color) 40%, rgba(255, 255, 255, 0.18));
+    background: color-mix(in srgb, var(--primary-color) 8%, rgba(255, 255, 255, 0.06));
 
     .song-name {
-      color: #fff7ff;
+      color: var(--text-primary);
     }
   }
 
@@ -152,11 +158,11 @@ function formatDuration(seconds: number): string {
     position: relative;
     width: 52px;
     height: 52px;
-    border-radius: 14px;
+    border-radius: var(--radius-md);
     overflow: hidden;
     background: rgba(255, 255, 255, 0.1);
     margin-right: 12px;
-    box-shadow: 0 14px 28px rgba(27, 14, 61, 0.18);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.14);
     flex-shrink: 0;
 
     img {
@@ -171,7 +177,7 @@ function formatDuration(seconds: number): string {
       display: flex;
       align-items: center;
       justify-content: center;
-      color: var(--text-secondary);
+      color: var(--text-tertiary);
 
       svg {
         width: 24px;
@@ -185,7 +191,8 @@ function formatDuration(seconds: number): string {
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(40, 24, 78, 0.52);
+      background: rgba(0, 0, 0, 0.42);
+      backdrop-filter: blur(4px);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -219,6 +226,7 @@ function formatDuration(seconds: number): string {
       text-overflow: ellipsis;
       min-width: 0;
       font-weight: 600;
+      letter-spacing: var(--letter-spacing-tight);
     }
 
     .song-artist {
@@ -227,6 +235,7 @@ function formatDuration(seconds: number): string {
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      line-height: var(--line-height-body);
     }
 
     .song-quality {
@@ -243,9 +252,10 @@ function formatDuration(seconds: number): string {
   }
 
   .song-album {
-    width: 180px;
+    flex: 0 1 180px;
+    min-width: 0;
     font-size: 0.76rem;
-    color: var(--text-secondary);
+    color: var(--text-tertiary);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -253,20 +263,19 @@ function formatDuration(seconds: number): string {
   }
 
   .song-duration {
-    width: 56px;
+    flex: 0 0 48px;
     font-size: 0.74rem;
-    color: var(--text-secondary);
+    color: var(--text-tertiary);
     text-align: right;
-    margin-right: 16px;
+    font-variant-numeric: tabular-nums;
+    margin-right: 8px;
   }
 
   .song-actions {
     display: flex;
-    gap: 8px;
+    gap: 4px;
     opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-    transition: opacity 0.2s;
+    transition: opacity var(--transition-fast);
 
     .action-btn {
       svg {
@@ -276,16 +285,42 @@ function formatDuration(seconds: number): string {
     }
   }
 
-  &:hover .song-actions {
-    opacity: 1;
-    visibility: visible;
-    pointer-events: auto;
-  }
-
+  &:hover .song-actions,
   &.is-hover .song-actions {
     opacity: 1;
-    visibility: visible;
-    pointer-events: auto;
+  }
+
+  @media (max-width: 768px) {
+    .song-album {
+      display: none;
+    }
+
+    .song-actions {
+      opacity: 1;
+    }
+
+    .song-duration {
+      flex: 0 0 40px;
+    }
+
+    .song-info {
+      margin-right: 8px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    padding: 8px 10px;
+
+    .song-cover {
+      width: 42px;
+      height: 42px;
+      margin-right: 10px;
+      border-radius: var(--radius-sm);
+    }
+
+    .song-info .song-name {
+      font-size: 0.84rem;
+    }
   }
 }
 </style>

@@ -5,7 +5,7 @@ use reqwest::Client;
 use sqlx::SqlitePool;
 use std::collections::HashMap;
 use std::fs;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use tokio::fs::File;
 use tokio::io::AsyncWriteExt;
 use tokio::sync::Mutex;
@@ -150,6 +150,33 @@ fn build_download_file_path(save_path: &str, filename: &str) -> Result<PathBuf, 
     Ok(path.join(filename))
 }
 
+async fn copy_local_file_to_download_path(
+    source_path: &str,
+    target_path: &Path,
+) -> Result<u64, String> {
+    let source = PathBuf::from(source_path);
+    let metadata = tokio::fs::metadata(&source)
+        .await
+        .map_err(|e| format!("Failed to stat local media file: {}", e))?;
+
+    if !metadata.is_file() {
+        return Err("Local media path is not a file".to_string());
+    }
+
+    if let Ok(existing_target) = tokio::fs::canonicalize(target_path).await {
+        let source_canonical = tokio::fs::canonicalize(&source)
+            .await
+            .map_err(|e| format!("Failed to resolve local media file: {}", e))?;
+        if existing_target == source_canonical {
+            return Ok(metadata.len());
+        }
+    }
+
+    tokio::fs::copy(&source, target_path)
+        .await
+        .map_err(|e| format!("Failed to copy local media file: {}", e))
+}
+
 async fn mark_task_failed(pool: &SqlitePool, task_id: i64, error: &str) -> Result<(), String> {
     DownloadTask::update(
         pool,
@@ -226,6 +253,38 @@ pub async fn update_download_task(
         .await
         .map_err(|e| e.to_string())?;
     Ok(task)
+}
+
+#[tauri::command]
+pub async fn complete_download_from_local_file(
+    id: i64,
+    source_path: String,
+    save_path: String,
+) -> Result<String, String> {
+    let pool = get_pool().await.map_err(|e| e.to_string())?;
+    let task = DownloadTask::get_by_id(&pool, id)
+        .await
+        .map_err(|e| e.to_string())?
+        .ok_or("Task not found")?;
+
+    let file_path = build_download_file_path(&save_path, &task.filename)?;
+    copy_local_file_to_download_path(&source_path, &file_path).await?;
+
+    let file_path_str = file_path.to_string_lossy().to_string();
+    DownloadTask::update(
+        &pool,
+        id,
+        UpdateDownloadTask {
+            status: Some("completed".to_string()),
+            progress: Some(100.0),
+            error: Some(String::new()),
+            file_path: Some(file_path_str.clone()),
+        },
+    )
+    .await
+    .map_err(|e| format!("Failed to update completion: {}", e))?;
+
+    Ok(file_path_str)
 }
 
 #[tauri::command]
@@ -361,6 +420,34 @@ mod tests {
 
         assert!(save_path.exists());
         assert_eq!(file_path.file_name().unwrap(), "track.flac");
+
+        let _ = std::fs::remove_dir_all(base);
+    }
+
+    #[tokio::test]
+    async fn copy_local_file_to_download_path_copies_cached_media() {
+        let base = std::env::temp_dir().join(format!(
+            "jiyu_music_local_copy_test_{}",
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        let source_dir = base.join("cache");
+        let target_dir = base.join("downloads");
+        std::fs::create_dir_all(&source_dir).unwrap();
+        std::fs::create_dir_all(&target_dir).unwrap();
+
+        let source_path = source_dir.join("cached.flac");
+        let target_path = target_dir.join("song.flac");
+        std::fs::write(&source_path, b"cached media bytes").unwrap();
+
+        let copied = copy_local_file_to_download_path(source_path.to_str().unwrap(), &target_path)
+            .await
+            .unwrap();
+
+        assert_eq!(copied, "cached media bytes".len() as u64);
+        assert_eq!(std::fs::read(&target_path).unwrap(), b"cached media bytes");
 
         let _ = std::fs::remove_dir_all(base);
     }

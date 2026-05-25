@@ -86,7 +86,7 @@ const player = usePlayerStore()
 const uiMode = useUIModeStore()
 const userSourceStore = useUserSourceStore()
 
-const defaultCover = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="120" height="120"%3E%3Crect fill="%236a53ad" width="120" height="120"/%3E%3Ccircle cx="60" cy="60" r="30" fill="%23ffffff" fill-opacity="0.22"/%3E%3C/svg%3E'
+const defaultCover = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="120" height="120"%3E%3Crect fill="%231a1a2e" width="120" height="120"/%3E%3Ccircle cx="60" cy="60" r="22" fill="none" stroke="%23ffffff" stroke-opacity="0.18" stroke-width="2"/%3E%3Cpath d="M52 48l24 12-24 12V48z" fill="%23ffffff" fill-opacity="0.2"/%3E%3C/svg%3E'
 const isDragging = ref(false)
 const volumeValue = ref(player.volume)
 const isMuted = ref(false)
@@ -115,13 +115,13 @@ const currentSourceLabel = computed(() => {
 const playModeIcon = computed(() => {
   switch (player.playMode) {
     case 'loop':
-      return '🔁'
+      return '↻'
     case 'single':
-      return '🔂'
+      return '①'
     case 'random':
-      return '🔀'
+      return '⇄'
     default:
-      return '🔁'
+      return '↻'
   }
 })
 
@@ -282,14 +282,14 @@ onUnmounted(() => {
   height: 100%;
   min-height: 64px;
   padding: 10px 14px;
-  border-radius: var(--player-bar-radius, 14px);
+  border-radius: var(--player-bar-radius, var(--radius-md));
   background:
     radial-gradient(circle at top left, rgba(255, 255, 255, 0.1), transparent 30%),
     linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.04));
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border-color);
   box-shadow:
     0 6px 14px rgba(9, 5, 22, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    var(--inset-highlight);
 }
 
 .player-bar__main {
@@ -311,7 +311,7 @@ onUnmounted(() => {
 }
 
 .player-bar__cover--placeholder {
-  background: linear-gradient(135deg, rgba(247, 232, 255, 0.34), rgba(196, 171, 245, 0.26));
+  background: linear-gradient(135deg, var(--surface-strong), var(--surface-muted));
 }
 
 .player-bar__track {
@@ -394,7 +394,8 @@ onUnmounted(() => {
   min-width: 32px;
   height: 32px;
   padding: 0 8px;
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--player-btn-bg);
+  transition: background var(--transition-fast), transform var(--transition-fast);
 
   svg {
     width: 15px;
@@ -402,21 +403,36 @@ onUnmounted(() => {
   }
 
   &:hover {
-    background: rgba(255, 255, 255, 0.12);
+    background: var(--player-btn-bg-hover);
+  }
+
+  &:active {
+    transform: scale(0.94);
   }
 }
 
 .player-bar__play {
   width: 40px;
   height: 40px;
-  background: linear-gradient(135deg, #f3d7ff, #d8bfff);
-  color: white;
-  color: #5a4096;
-  box-shadow: 0 8px 18px rgba(96, 69, 167, 0.14);
+  background: var(--player-play-bg);
+  color: var(--player-play-color);
+  box-shadow: var(--player-play-shadow);
+  transition:
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast);
 
   svg {
     width: 17px;
     height: 17px;
+  }
+
+  &:hover {
+    transform: scale(1.06);
+    box-shadow: 0 10px 24px color-mix(in srgb, var(--primary-color) 30%, transparent);
+  }
+
+  &:active {
+    transform: scale(0.95);
   }
 }
 
@@ -439,24 +455,31 @@ onUnmounted(() => {
   position: relative;
   height: 4px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.12);
+  background: var(--player-progress-track);
 }
 
 .player-bar__progress-fill {
   height: 100%;
   border-radius: inherit;
-  background: linear-gradient(90deg, #f4d8ff, #c0efff);
+  background: var(--player-progress-fill);
+  transition: width 120ms linear;
 }
 
 .player-bar__progress-thumb {
   position: absolute;
   top: 50%;
-  width: 10px;
-  height: 10px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
-  background: white;
-  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.08);
+  background: var(--player-progress-thumb);
+  box-shadow: 0 0 0 4px var(--player-progress-thumb-ring);
   transform: translate(-50%, -50%);
+  transition: transform 120ms ease, box-shadow 120ms ease;
+}
+
+.player-bar__progress:hover .player-bar__progress-thumb {
+  transform: translate(-50%, -50%) scale(1.2);
+  box-shadow: 0 0 0 6px var(--player-progress-thumb-ring);
 }
 
 .player-bar__side {
@@ -474,12 +497,13 @@ onUnmounted(() => {
   min-width: 48px;
   height: 30px;
   padding: 0 10px;
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--player-btn-bg);
   font-size: 0.68rem;
   font-weight: 700;
+  transition: background var(--transition-fast);
 
   &:hover {
-    background: rgba(255, 255, 255, 0.12);
+    background: var(--player-btn-bg-hover);
   }
 }
 

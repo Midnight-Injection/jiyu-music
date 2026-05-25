@@ -9,7 +9,9 @@ use tokio::sync::Mutex as AsyncMutex;
 fn startup_log_path() -> PathBuf {
     #[cfg(target_os = "windows")]
     {
-        if let Some(base_dir) = std::env::var_os("LOCALAPPDATA").or_else(|| std::env::var_os("APPDATA")) {
+        if let Some(base_dir) =
+            std::env::var_os("LOCALAPPDATA").or_else(|| std::env::var_os("APPDATA"))
+        {
             return PathBuf::from(base_dir)
                 .join("Jiyu Music")
                 .join("logs")
@@ -58,7 +60,11 @@ fn init_startup_logging() {
             "panic without string payload".to_string()
         };
 
-        if let Ok(mut file) = OpenOptions::new().create(true).append(true).open(&panic_log_path) {
+        if let Ok(mut file) = OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open(&panic_log_path)
+        {
             let _ = writeln!(
                 file,
                 "[{}] panic at {}: {}",
@@ -226,6 +232,7 @@ fn main() {
             jiyu_music::get_download_tasks_by_status,
             jiyu_music::update_download_task,
             jiyu_music::delete_download_task,
+            jiyu_music::complete_download_from_local_file,
             jiyu_music::start_download,
             jiyu_music::pause_download,
             jiyu_music::resume_download,

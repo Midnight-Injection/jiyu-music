@@ -9,6 +9,7 @@ import {
   type PlaybackResolveOptions,
 } from './types'
 import { resolveWithCustomSources } from './resolvers/customSourceResolver'
+import { resolveWithBuiltinSource } from './resolvers/builtinResolver'
 import { getChannelFailureSummary } from '../source-health/store'
 import { canUsePlaybackUrl } from './urlProbe'
 import { searchBuiltInTracks } from '../search/providers'
@@ -178,7 +179,9 @@ export function usePlaybackResolver(): PlaybackResolver {
     options: PlaybackResolveOptions = {}
   ): Promise<PlaybackResolution> {
     const channel = resolveMusicChannel(track)
-    const cachedPlayback = await getCachedPlayback(track, settingsStore.settings.audioQuality)
+    const cachedPlayback = options.ignorePlaybackCache
+      ? null
+      : await getCachedPlayback(track, settingsStore.settings.audioQuality)
 
     if (cachedPlayback?.playableLocalUrl) {
       return {
@@ -186,6 +189,7 @@ export function usePlaybackResolver(): PlaybackResolver {
         channel,
         quality: cachedPlayback.actualQuality || undefined,
         resolver: 'cached-local',
+        localFilePath: cachedPlayback.localFilePath,
       }
     }
 
@@ -261,6 +265,12 @@ export function usePlaybackResolver(): PlaybackResolver {
       const customResolution = await resolveCustomOnly(track, options)
       if (customResolution) return customResolution
     }
+
+    const builtinResolution = await resolveWithBuiltinSource(
+      track,
+      settingsStore.settings.audioQuality,
+    )
+    if (builtinResolution) return builtinResolution
 
     throw createNoAvailableSourceError(track, channel)
   }

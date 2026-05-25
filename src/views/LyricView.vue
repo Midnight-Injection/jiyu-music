@@ -40,7 +40,7 @@ const router = useRouter()
 const player = usePlayerStore()
 const lyricDisplayRef = ref<InstanceType<typeof LyricDisplay>>()
 
-const defaultCover = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="200"%3E%3Crect fill="%23333" width="200" height="200"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" fill="%23666" font-size="48"%3E🎵%3C/text%3E%3C/svg%3E'
+const defaultCover = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="200"%3E%3Crect fill="%231a1a2e" width="200" height="200"/%3E%3Ccircle cx="100" cy="100" r="40" fill="none" stroke="%23ffffff" stroke-opacity="0.15" stroke-width="2"/%3E%3Cpath d="M88 82l34 18-34 18V82z" fill="%23ffffff" fill-opacity="0.18"/%3E%3C/svg%3E'
 
 function goBack() {
   router.back()
@@ -51,16 +51,21 @@ function goBack() {
 .lyric-view {
   position: fixed;
   top: 0;
-  left: 200px;
+  left: calc(var(--sidebar-width, 182px) + 8px);
   right: 0;
-  bottom: 80px;
+  bottom: calc(var(--player-bar-height, 68px) + 8px);
   display: flex;
   flex-direction: column;
-  background: #121212;
+  background: var(--bg-primary);
   overflow: hidden;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
 
-  @media (max-width: 768px) {
+  @media (max-width: 920px) {
     left: 0;
+    bottom: 0;
+    border-radius: 0;
+    border: none;
   }
 }
 
@@ -70,27 +75,31 @@ function goBack() {
   display: flex;
   align-items: center;
   padding: 16px 24px;
-  background: rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--bg-overlay);
+  backdrop-filter: var(--glass-blur);
+  border-bottom: 1px solid var(--border-color);
 
   .back-btn {
     width: 40px;
     height: 40px;
     border: none;
     background: transparent;
-    color: rgba(255, 255, 255, 0.7);
+    color: var(--text-secondary);
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 50%;
-    transition: all 0.2s ease;
+    border-radius: var(--radius-full);
     flex-shrink: 0;
+    transition: background var(--transition-fast), color var(--transition-fast);
 
     &:hover {
-      background: rgba(255, 255, 255, 0.1);
-      color: #ffffff;
+      background: var(--bg-hover);
+      color: var(--text-primary);
+    }
+
+    &:active {
+      transform: scale(0.94);
     }
   }
 
@@ -102,16 +111,17 @@ function goBack() {
     .track-name {
       font-size: 18px;
       font-weight: 600;
-      color: #ffffff;
+      color: var(--text-primary);
       margin: 0 0 4px 0;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      letter-spacing: var(--letter-spacing-tight);
     }
 
     .track-artist {
       font-size: 14px;
-      color: rgba(255, 255, 255, 0.6);
+      color: var(--text-tertiary);
       margin: 0;
       white-space: nowrap;
       overflow: hidden;
@@ -156,9 +166,9 @@ function goBack() {
     bottom: 0;
     background: linear-gradient(
       to bottom,
-      rgba(18, 18, 18, 0.7) 0%,
-      rgba(18, 18, 18, 0.3) 50%,
-      rgba(18, 18, 18, 0.7) 100%
+      color-mix(in srgb, var(--bg-primary) 70%, transparent) 0%,
+      color-mix(in srgb, var(--bg-primary) 30%, transparent) 50%,
+      color-mix(in srgb, var(--bg-primary) 70%, transparent) 100%
     );
   }
 }

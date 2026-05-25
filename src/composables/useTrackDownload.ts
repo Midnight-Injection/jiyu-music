@@ -20,20 +20,23 @@ function sanitizeFilenamePart(value?: string | null): string {
   return normalized || '未知'
 }
 
-function inferFileExtension(url: string): string {
+function inferFileExtension(pathOrUrl: string): string {
+  const readExtension = (value: string) => {
+    const cleanValue = value.split(/[?#]/)[0] || ''
+    const segment = cleanValue.split('/').pop() || ''
+    return segment.match(/\.([a-zA-Z0-9]{2,6})$/)?.[1]?.toLowerCase()
+  }
+
   try {
-    const pathname = new URL(url).pathname
-    const segment = pathname.split('/').pop() || ''
-    const match = segment.match(/\.([a-zA-Z0-9]{2,6})$/)
-    return match?.[1]?.toLowerCase() || DEFAULT_FILE_EXTENSION
+    return readExtension(new URL(pathOrUrl).pathname) || DEFAULT_FILE_EXTENSION
   } catch {
-    return DEFAULT_FILE_EXTENSION
+    return readExtension(pathOrUrl) || DEFAULT_FILE_EXTENSION
   }
 }
 
-function buildDownloadFilename(track: MusicInfo, template: string, url: string): string {
+function buildDownloadFilename(track: MusicInfo, template: string, pathOrUrl: string): string {
   const filenameTemplate = template?.trim() || '{artist} - {title}'
-  const extension = inferFileExtension(url)
+  const extension = inferFileExtension(pathOrUrl)
   const filename = filenameTemplate
     .replace(/\{artist\}/gi, sanitizeFilenamePart(track.artist))
     .replace(/\{title\}/gi, sanitizeFilenamePart(track.name))
@@ -48,6 +51,7 @@ function createDownloadItem(
   url: string,
   filename: string,
   status: DownloadItem['status'],
+  filePath?: string,
 ): DownloadItem {
   const timestamp = new Date().toISOString()
   return {
@@ -60,10 +64,11 @@ function createDownloadItem(
     url,
     filename,
     status,
-    progress: 0,
+    progress: status === 'completed' ? 100 : 0,
     speed: 0,
     createdAt: timestamp,
     updatedAt: timestamp,
+    filePath,
   }
 }
 
@@ -115,16 +120,27 @@ export function useTrackDownload() {
     return selected
   }
 
-  async function downloadTrack(track: MusicInfo): Promise<{ id: number; savePath: string; filename: string }> {
-    if (!settingsStore.settings.downloadEnabled) {
-      throw new Error('下载功能已关闭，请先在设置中开启')
-    }
 
-    const savePath = await ensureDownloadPath()
-    let resolution
-
+  async function resolveDownloadSource(track: MusicInfo) {
     try {
-      resolution = await playbackResolver.resolve(track)
+      const playbackResolution = await playbackResolver.resolve(track)
+
+      if (playbackResolution.resolver === 'cached-local') {
+        if (playbackResolution.localFilePath) {
+          return playbackResolution
+        }
+
+        console.warn('[Download] Cached local playback has no local file path, resolving fresh download URL:', {
+          name: track.name,
+          artist: track.artist,
+        })
+      }
+
+      if (playbackResolution.resolver !== 'cached-local' && playbackResolution.resolver !== 'cached-remote') {
+        return playbackResolution
+      }
+
+      return await playbackResolver.resolve(track, { ignorePlaybackCache: true })
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error)
       if (message !== '暂无可用音源') throw error
@@ -138,32 +154,49 @@ export function useTrackDownload() {
         throw error
       }
 
-      resolution = builtinResolution
+      return builtinResolution
     }
+  }
+
+  async function downloadTrack(track: MusicInfo): Promise<{ id: number; savePath: string; filename: string }> {
+    if (!settingsStore.settings.downloadEnabled) {
+      throw new Error('下载功能已关闭，请先在设置中开启')
+    }
+
+    const savePath = await ensureDownloadPath()
+    const resolution = await resolveDownloadSource(track)
 
     if (!resolution.url) {
       throw new Error(`未获取到可下载链接：${track.name}`)
     }
 
+    const downloadSource = resolution.localFilePath || resolution.url
     const filename = buildDownloadFilename(
       track,
       settingsStore.settings.fileNaming,
-      resolution.url,
+      downloadSource,
     )
     const tasks = await invoke<Array<{ status: string }>>('get_download_tasks')
     const activeCount = tasks.filter((task) => task.status === 'downloading').length
     const shouldStartImmediately = activeCount < Math.max(1, settingsStore.settings.maxDownloads)
 
     let taskId: number | null = null
+    let completedFilePath: string | undefined
 
     try {
       taskId = await invoke<number>('create_download_task', {
         songId: track.storageSongId ?? null,
-        url: resolution.url,
+        url: downloadSource,
         filename,
       })
 
-      if (shouldStartImmediately) {
+      if (resolution.localFilePath) {
+        completedFilePath = await invoke<string>('complete_download_from_local_file', {
+          id: taskId,
+          sourcePath: resolution.localFilePath,
+          savePath,
+        })
+      } else if (shouldStartImmediately) {
         await invoke('start_download', { id: taskId, savePath })
       }
 
@@ -191,7 +224,8 @@ export function useTrackDownload() {
           track,
           resolution.url,
           filename,
-          shouldStartImmediately ? 'downloading' : 'pending',
+          completedFilePath ? 'completed' : shouldStartImmediately ? 'downloading' : 'pending',
+          completedFilePath,
         ),
       )
 

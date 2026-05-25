@@ -31,6 +31,8 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   min-height: 100%;
+  line-height: var(--line-height-body);
+  letter-spacing: var(--letter-spacing-normal);
 }
 
 body::before {
@@ -81,7 +83,7 @@ img {
   backdrop-filter: var(--glass-blur);
   border: 1px solid var(--border-color);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    var(--inset-highlight-strong),
     0 24px 64px var(--liquid-deep-shadow);
 }
 
@@ -103,19 +105,19 @@ img {
   border-radius: var(--radius-md);
   background: var(--panel-strong);
   border: 1px solid var(--border-color);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  box-shadow: var(--inset-highlight-strong);
 }
 
 .page-title {
   font-size: 2.2rem;
-  letter-spacing: -0.04em;
+  letter-spacing: var(--letter-spacing-tight);
   line-height: 0.96;
 }
 
 .page-subtitle {
   margin-top: 10px;
   color: var(--text-secondary);
-  line-height: 1.6;
+  line-height: var(--line-height-body);
   max-width: 640px;
   font-size: 0.9rem;
 }
@@ -125,7 +127,7 @@ img {
   align-items: center;
   gap: 8px;
   padding: 8px 14px;
-  border-radius: 999px;
+  border-radius: var(--radius-full);
   background: rgba(255, 255, 255, 0.08);
   color: var(--text-primary);
   font-size: 0.78rem;
@@ -138,7 +140,7 @@ img {
   padding: 16px;
   background: var(--panel-gradient);
   border: 1px solid var(--border-color);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  box-shadow: var(--inset-highlight);
 }
 
 .page-kicker {
@@ -170,7 +172,7 @@ img {
   gap: 8px;
   min-height: 34px;
   padding: 0 12px;
-  border-radius: 999px;
+  border-radius: var(--radius-full);
   background: var(--panel-muted);
   border: 1px solid var(--border-color);
   color: var(--text-secondary);
@@ -185,7 +187,7 @@ img {
   cursor: pointer;
   min-height: 40px;
   padding: 0 16px;
-  border-radius: 999px;
+  border-radius: var(--radius-full);
   background: var(--button-primary-gradient);
   color: var(--text-on-primary);
   text-decoration: none;
@@ -199,6 +201,17 @@ img {
     filter var(--transition-fast),
     background-color var(--transition-fast),
     border-color var(--transition-fast);
+
+  &:hover:not(:disabled) {
+    transform: translateY(-1px);
+    filter: saturate(1.08);
+    box-shadow: 0 20px 40px color-mix(in srgb, var(--primary-color) 30%, transparent);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0) scale(0.97);
+    filter: saturate(1);
+  }
 }
 
 .app-grid {
@@ -206,15 +219,13 @@ img {
   gap: 18px;
 }
 
-.app-button:hover:not(:disabled),
 .app-icon-button:hover:not(:disabled) {
   transform: translateY(-1px);
   filter: saturate(1.08);
 }
 
-.app-button:active:not(:disabled),
 .app-icon-button:active:not(:disabled) {
-  transform: translateY(0) scale(0.98);
+  transform: translateY(0) scale(0.96);
 }
 
 .app-button:focus-visible,
@@ -305,18 +316,21 @@ img {
   justify-content: center;
   flex: 0 0 auto;
   cursor: pointer;
-  border-radius: 14px;
+  border-radius: var(--radius-md);
   background: var(--button-secondary-bg);
   color: var(--text-primary);
   border: 1px solid var(--button-secondary-border);
   appearance: none;
   box-shadow: none;
+  transition:
+    background var(--transition-fast),
+    transform var(--transition-fast);
 }
 
 .app-icon-button.compact {
   width: 34px;
   height: 34px;
-  border-radius: 12px;
+  border-radius: var(--radius-sm);
 }
 
 .app-icon-button svg {
@@ -332,7 +346,7 @@ img {
   appearance: none;
   min-height: 34px;
   padding: 0 12px;
-  border-radius: 999px;
+  border-radius: var(--radius-full);
   background: var(--pill-secondary-bg);
   border: 1px solid var(--pill-secondary-border);
   color: var(--text-primary);

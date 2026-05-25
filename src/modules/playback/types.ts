@@ -9,10 +9,12 @@ export interface PlaybackResolution {
   resolver: 'custom-source' | 'built-in' | 'direct-url' | 'cached-local' | 'cached-remote'
   userSourceId?: string
   matchedTrack?: MusicInfo
+  localFilePath?: string | null
 }
 
 export interface PlaybackResolveOptions {
   excludedSourceIds?: string[]
+  ignorePlaybackCache?: boolean
 }
 
 export interface PlaybackResolver {

@@ -6,7 +6,7 @@
 
 import { ref, getCurrentScope, onScopeDispose } from 'vue'
 import { useUserSourceStore } from '../stores/userSource'
-import type { UserSourceScript } from '../types/userSource'
+import type { UserSourceInfo, UserSourceScript } from '../types/userSource'
 import { invoke } from '@tauri-apps/api/core'
 import CryptoJS from 'crypto-js'
 
@@ -490,6 +490,7 @@ function createLxApi(_sourceId: string, source: UserSourceScript) {
   function send(eventName: string, data: any) {
     if (eventName === EVENT_NAMES.inited && data.status && data.sources) {
       sources = data.sources
+      lxApi._sources = sources
     }
   }
 
@@ -972,6 +973,19 @@ export function useScriptRuntime() {
     return null
   }
 
+  async function getSourceRuntimeSources(sourceId: string): Promise<Record<string, ScriptSource | UserSourceInfo>> {
+    await initialize()
+
+    const source = userSourceStore.enabledSources.find((item) => item.id === sourceId)
+    if (!source) return {}
+
+    const existingInstance = lxInstances.get(source.id)
+    const instance = existingInstance ?? (await initScript(source))
+    if (!instance) return source.sources || {}
+
+    return Object.keys(instance.sources).length > 0 ? instance.sources : source.sources || {}
+  }
+
   async function search(
     sourceId: string,
     keyword: string,
@@ -1036,6 +1050,7 @@ export function useScriptRuntime() {
     initialize,
     search,
     getMusicUrl,
+    getSourceRuntimeSources,
     getLyric,
     getAvailableSources,
     getSourceCapabilities,

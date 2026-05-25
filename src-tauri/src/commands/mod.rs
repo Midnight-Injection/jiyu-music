@@ -27,9 +27,9 @@ pub use default_sources::{
     has_default_sources_been_imported, import_default_sources, list_available_default_sources,
 };
 pub use download::{
-    create_download_task, delete_download_task, get_download_task, get_download_tasks,
-    get_download_tasks_by_status, open_download_folder, pause_download, resume_download,
-    select_download_folder, start_download, update_download_task,
+    complete_download_from_local_file, create_download_task, delete_download_task,
+    get_download_task, get_download_tasks, get_download_tasks_by_status, open_download_folder,
+    pause_download, resume_download, select_download_folder, start_download, update_download_task,
 };
 pub use effects::{
     apply_equalizer_preset, get_effect_settings, get_equalizer_presets, get_reverb_presets,

@@ -63,13 +63,13 @@ const { navItems } = useNavItems()
   flex-direction: column;
   gap: 14px;
   overflow: auto;
-  border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
   background:
     radial-gradient(circle at top left, rgba(255, 255, 255, 0.08), transparent 26%),
     linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.025));
   backdrop-filter: blur(18px);
-  box-shadow: var(--panel-shadow-soft);
+  box-shadow: var(--panel-shadow-soft), var(--inset-highlight);
 }
 
 .sidebar__brand {
@@ -77,26 +77,38 @@ const { navItems } = useNavItems()
   align-items: center;
   gap: 10px;
   padding: 2px 4px 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+  border-bottom: 1px solid var(--border-color);
 }
 
 .sidebar__logo {
   width: 40px;
   height: 40px;
-  border-radius: 14px;
+  border-radius: var(--radius-md);
   display: grid;
   place-items: center;
   background:
     radial-gradient(circle at 30% 25%, rgba(255, 255, 255, 0.34), transparent 30%),
     linear-gradient(145deg, #cfbbff, #8a68e0);
-  box-shadow: 0 18px 36px rgba(74, 48, 134, 0.26);
+  box-shadow: 0 14px 32px rgba(74, 48, 134, 0.24);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+
+  &:hover {
+    transform: scale(1.05);
+    box-shadow: 0 16px 36px rgba(74, 48, 134, 0.3);
+  }
 
   span {
     width: 16px;
     height: 16px;
     border-radius: 999px;
     background: rgba(255, 255, 255, 0.92);
+    animation: logo-pulse 3s ease-in-out infinite;
   }
+}
+
+@keyframes logo-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.92; }
+  50% { transform: scale(0.88); opacity: 1; }
 }
 
 .sidebar__brand-copy {
@@ -132,10 +144,16 @@ const { navItems } = useNavItems()
   gap: 9px;
   min-height: 44px;
   padding: 0 12px;
-  border-radius: 16px;
+  border-radius: var(--radius-md);
   color: var(--text-secondary);
   border: 1px solid transparent;
   background: rgba(255, 255, 255, 0.045);
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast),
+    border-color var(--transition-fast),
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast);
 
   svg {
     width: 18px;
@@ -144,6 +162,7 @@ const { navItems } = useNavItems()
     stroke-width: 1.8;
     stroke-linecap: round;
     stroke-linejoin: round;
+    transition: transform var(--transition-fast);
   }
 
   span {
@@ -151,23 +170,34 @@ const { navItems } = useNavItems()
     font-weight: 600;
   }
 
-  &:hover,
-  &.is-active {
+  &:hover {
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(215, 192, 255, 0.08));
     color: var(--text-primary);
     border-color: rgba(255, 255, 255, 0.14);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    box-shadow: var(--inset-highlight);
+    transform: translateX(2px);
+  }
+
+  &:active {
+    transform: translateX(2px) scale(0.98);
+  }
+
+  &.is-active {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.12), color-mix(in srgb, var(--primary-color) 10%, rgba(215, 192, 255, 0.08)));
+    color: var(--text-primary);
+    border-color: color-mix(in srgb, var(--primary-color) 24%, rgba(255, 255, 255, 0.14));
+    box-shadow: var(--inset-highlight);
   }
 }
 
 .sidebar__panel {
   margin-top: auto;
   padding: 14px;
-  border-radius: 14px;
+  border-radius: var(--radius-md);
   background:
     radial-gradient(circle at top right, rgba(255, 255, 255, 0.1), transparent 28%),
     linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.035));
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border-color);
 }
 
 .sidebar__profile {
