@@ -26,22 +26,6 @@
         <span>{{ item.label }}</span>
       </router-link>
     </nav>
-
-    <div v-if="!uiMode.isTV && !uiMode.isMobile" class="sidebar__panel">
-      <div class="sidebar__profile">
-        <div class="sidebar__avatar">JY</div>
-        <div class="sidebar__profile-copy">
-          <strong>极域桌面端</strong>
-          <span>已同步本地歌单与搜索记录</span>
-        </div>
-      </div>
-
-      <div class="sidebar__panel-tags">
-        <span>Search</span>
-        <span>Player</span>
-        <span>Playlist</span>
-      </div>
-    </div>
   </aside>
 </template>
 
@@ -63,13 +47,11 @@ const { navItems } = useNavItems()
   flex-direction: column;
   gap: 14px;
   overflow: auto;
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border-color);
+    border-radius: 0;
   background:
     radial-gradient(circle at top left, rgba(255, 255, 255, 0.08), transparent 26%),
     linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.025));
   backdrop-filter: blur(18px);
-  box-shadow: var(--panel-shadow-soft), var(--inset-highlight);
 }
 
 .sidebar__brand {
@@ -88,13 +70,13 @@ const { navItems } = useNavItems()
   place-items: center;
   background:
     radial-gradient(circle at 30% 25%, rgba(255, 255, 255, 0.34), transparent 30%),
-    linear-gradient(145deg, #cfbbff, #8a68e0);
-  box-shadow: 0 14px 32px rgba(74, 48, 134, 0.24);
+    linear-gradient(145deg, #6366F1, #4338CA);
+  box-shadow: 0 14px 32px color-mix(in srgb, var(--primary-color) 24%, transparent);
   transition: transform var(--transition-fast), box-shadow var(--transition-fast);
 
   &:hover {
     transform: scale(1.05);
-    box-shadow: 0 16px 36px rgba(74, 48, 134, 0.3);
+    box-shadow: 0 16px 36px color-mix(in srgb, var(--primary-color) 30%, transparent);
   }
 
   span {
@@ -190,86 +172,18 @@ const { navItems } = useNavItems()
   }
 }
 
-.sidebar__panel {
-  margin-top: auto;
-  padding: 14px;
-  border-radius: var(--radius-md);
-  background:
-    radial-gradient(circle at top right, rgba(255, 255, 255, 0.1), transparent 28%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.035));
-  border: 1px solid var(--border-color);
-}
-
-.sidebar__profile {
-  display: grid;
-  grid-template-columns: 42px minmax(0, 1fr);
-  gap: 10px;
-  align-items: center;
-}
-
-.sidebar__avatar {
-  display: grid;
-  place-items: center;
-  width: 42px;
-  height: 42px;
-  border-radius: 16px;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.28), rgba(210, 185, 255, 0.18));
-  color: var(--text-primary);
-  font-size: 0.84rem;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-}
-
-.sidebar__profile-copy {
-  min-width: 0;
-
-  strong,
-  span {
-    display: block;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  strong {
-    font-size: 0.82rem;
-  }
-
-  span {
-    margin-top: 4px;
-    color: var(--text-secondary);
-    font-size: 0.68rem;
-    line-height: 1.4;
-  }
-}
-
-.sidebar__panel-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 12px;
-
-  span {
-    padding: 4px 8px;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.1);
-    color: var(--text-primary);
-    font-size: 0.66rem;
-  }
-}
-
 // === TV 模式适配 ===
 [data-ui-mode='tv'] {
   .sidebar {
     padding: 24px 16px 20px;
-    border-radius: var(--radius-lg);
+  border-radius: 0;
     backdrop-filter: none;
   }
 
   .sidebar__logo {
     width: 56px;
     height: 56px;
-    border-radius: 18px;
+    border-radius: var(--radius-md);
 
     span {
       width: 22px;
@@ -288,7 +202,7 @@ const { navItems } = useNavItems()
   .sidebar__nav-item {
     min-height: 56px;
     padding: 0 16px;
-    border-radius: 18px;
+    border-radius: var(--radius-md);
 
     svg {
       width: 24px;
@@ -300,7 +214,6 @@ const { navItems } = useNavItems()
     }
   }
 }
-
 </style>
 
 <style lang="scss">
@@ -325,7 +238,7 @@ const { navItems } = useNavItems()
 .app-layout-shell--compact .sidebar__logo {
   width: 28px;
   height: 28px;
-  border-radius: 10px;
+  border-radius: 8px;
 }
 
 .app-layout-shell--compact .sidebar__logo span {
@@ -360,9 +273,5 @@ const { navItems } = useNavItems()
 .app-layout-shell--compact .sidebar__nav-item svg {
   width: 16px;
   height: 16px;
-}
-
-.app-layout-shell--compact .sidebar__panel {
-  display: none;
 }
 </style>

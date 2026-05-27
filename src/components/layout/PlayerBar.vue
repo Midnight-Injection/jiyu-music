@@ -274,7 +274,7 @@ onUnmounted(() => {
 <style scoped lang="scss">
 .player-bar {
   display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.35fr) auto;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2.2fr) minmax(0, 1fr);
   align-items: center;
   gap: 14px;
   width: 100%;
@@ -282,14 +282,11 @@ onUnmounted(() => {
   height: 100%;
   min-height: 64px;
   padding: 10px 14px;
-  border-radius: var(--player-bar-radius, var(--radius-md));
+  border-radius: var(--player-bar-radius, 0);
   background:
     radial-gradient(circle at top left, rgba(255, 255, 255, 0.1), transparent 30%),
     linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.04));
-  border: 1px solid var(--border-color);
-  box-shadow:
-    0 6px 14px rgba(9, 5, 22, 0.08),
-    var(--inset-highlight);
+  backdrop-filter: blur(18px);
 }
 
 .player-bar__main {
@@ -368,8 +365,10 @@ onUnmounted(() => {
 .player-bar__center {
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 8px;
   min-width: 0;
+  width: 100%;
 }
 
 .player-bar__controls,
@@ -441,6 +440,8 @@ onUnmounted(() => {
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   gap: 8px;
+  width: 100%;
+  max-width: 640px;
   min-width: 0;
   color: var(--text-secondary);
   font-size: 0.66rem;
@@ -523,7 +524,16 @@ onUnmounted(() => {
   }
 
   .player-bar__timeline {
-    display: none;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+
+    .player-bar__time {
+      display: none;
+    }
+  }
+
+  .player-bar__progress-track {
+    height: 3px;
   }
 
   .player-bar__side {
@@ -539,6 +549,10 @@ onUnmounted(() => {
     gap: 6px;
     padding: 4px 8px;
     min-height: 40px;
+  }
+
+  .player-bar__timeline {
+    display: none;
   }
 
   .player-bar__side {

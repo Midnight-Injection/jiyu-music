@@ -1,44 +1,29 @@
 <template>
   <div class="leaderboard-page page-shell">
-    <section class="page-hero glass-panel">
-      <div>
-        <span class="page-kicker">Trend Watch</span>
+    <section class="leaderboard-header">
+      <div class="leaderboard-header__info">
         <h1 class="page-title">热门榜单</h1>
         <p class="page-subtitle">
-          {{ isLoading
-            ? '正在搜索热门歌曲...'
-            : hasResults
-              ? `已找到 ${leaders.length} 首热门歌曲，双击可直接播放。`
-              : '点击歌曲可试听、下载或添加到歌单。' }}
+          {{ isLoading ? '正在搜索...' : hasResults ? `${leaders.length} 首` : '双击可直接播放' }}
         </p>
       </div>
 
       <div class="hero-actions">
-        <button
-          type="button"
-          class="hero-action hero-action--primary"
-          :disabled="leaders.length === 0 || isPlayingAll"
-          @click="playAll"
-        >
-          {{ isPlayingAll ? '播放中...' : '▶ 播放全部' }}
-        </button>
-        <button
-          type="button"
-          class="hero-action hero-action--secondary"
-          :disabled="leaders.length === 0"
-          @click="refreshLeaderboard"
-        >
-          {{ isLoading ? '刷新中...' : '↻ 刷新榜单' }}
-        </button>
+        <NButton size="small" type="primary" round :disabled="leaders.length === 0 || isPlayingAll" @click="playAll">
+          {{ isPlayingAll ? '播放中...' : '播放全部' }}
+        </NButton>
+        <NButton size="small" secondary round :disabled="leaders.length === 0" @click="refreshLeaderboard">
+          {{ isLoading ? '刷新中...' : '刷新榜单' }}
+        </NButton>
       </div>
     </section>
 
-    <section v-if="isLoading && !leaders.length" class="leaderboard-loading glass-panel section-card">
+    <section v-if="isLoading && !leaders.length" class="leaderboard-loading">
       <div class="spinner"></div>
       <p>正在搜索热门歌曲...</p>
     </section>
 
-    <section v-else class="leaderboard-table glass-panel section-card">
+    <section v-else class="leaderboard-table">
       <motion.div
         v-for="(item, index) in leaders"
         :key="item.id"
@@ -110,7 +95,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { motion } from 'motion-v'
-import { NEmpty } from 'naive-ui'
+import { NEmpty, NButton } from 'naive-ui'
 import FloatingMenu from '../components/context/FloatingMenu.vue'
 import { useTrackDownload } from '../composables/useTrackDownload'
 import { staggeredEnter } from '../lib/motion'
@@ -271,6 +256,41 @@ onUnmounted(() => {
 </script>
 
 <style scoped lang="scss">
+.leaderboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 0 0 12px;
+
+  &__info {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    min-width: 0;
+
+    h1 {
+      margin: 0;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .page-subtitle {
+      margin: 0;
+      color: var(--text-secondary);
+      font-size: 0.78rem;
+      white-space: nowrap;
+    }
+  }
+}
+
+.hero-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
 .leaderboard-loading {
   display: flex;
   flex-direction: column;
@@ -286,8 +306,8 @@ onUnmounted(() => {
   width: 28px;
   height: 28px;
   border-radius: 999px;
-  border: 3px solid rgba(255, 255, 255, 0.12);
-  border-top-color: rgba(255, 255, 255, 0.7);
+  border: 3px solid color-mix(in srgb, var(--text-secondary) 20%, transparent);
+  border-top-color: var(--primary-color);
   animation: spin 0.8s linear infinite;
 }
 
@@ -295,80 +315,32 @@ onUnmounted(() => {
   width: 14px;
   height: 14px;
   border-radius: 999px;
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  border-top-color: white;
+  border: 2px solid color-mix(in srgb, var(--text-secondary) 20%, transparent);
+  border-top-color: var(--primary-color);
   animation: spin 0.6s linear infinite;
 }
 
-.page-hero {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 16px;
-}
-
-.hero-actions {
-  display: flex;
-  gap: 8px;
-  flex-shrink: 0;
-  flex-wrap: wrap;
-}
-
-.hero-action {
-  padding: 9px 16px;
-  border-radius: 12px;
-  font-weight: 700;
-  font-size: 0.78rem;
-  white-space: nowrap;
-  cursor: pointer;
-
-  &--primary {
-    background: var(--button-primary-gradient);
-    color: white;
-    box-shadow: var(--button-primary-shadow);
-  }
-
-  &--secondary {
-    background: var(--pill-secondary-bg);
-    border: 1px solid var(--pill-secondary-border);
-    color: var(--text-primary);
-  }
-
-  &:disabled {
-    opacity: 0.45;
-    cursor: not-allowed;
-    box-shadow: none;
-  }
-}
-
 .leaderboard-table {
-  display: grid;
-  gap: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
 }
 
 .leader-row {
   display: grid;
-  grid-template-columns: 56px minmax(0, 1fr) auto;
+  grid-template-columns: 48px minmax(0, 1fr) auto;
   align-items: center;
-  gap: 16px;
-  padding: 14px 18px;
-  border-radius: 20px;
-  background: var(--panel-muted);
-  border: 1px solid var(--border-color);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  gap: 14px;
+  padding: 10px 14px;
   cursor: pointer;
-  transition: transform 0.18s ease, background-color 0.18s ease, border-color 0.18s ease;
+  transition: background 0.15s ease;
 
   &:hover {
-    transform: translateY(-1px);
-    background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(255, 255, 255, 0.12);
+    background: color-mix(in srgb, var(--primary-color) 6%, transparent);
   }
 
   &.is-playing {
-    background: color-mix(in srgb, var(--primary-color) 14%, rgba(255, 255, 255, 0.06));
-    border-color: var(--pill-primary-border);
-    box-shadow: var(--glow-primary);
+    background: color-mix(in srgb, var(--primary-color) 12%, transparent);
   }
 
   &.is-resolving {
@@ -377,9 +349,9 @@ onUnmounted(() => {
 }
 
 .leader-row__rank {
-  font-size: 1.4rem;
+  font-size: 1.1rem;
   font-weight: 800;
-  color: var(--text-primary);
+  color: var(--text-tertiary);
   text-align: center;
   font-variant-numeric: tabular-nums;
 }
@@ -393,18 +365,18 @@ onUnmounted(() => {
     text-overflow: ellipsis;
     white-space: nowrap;
     color: var(--text-primary);
-    font-size: 0.92rem;
-    font-weight: 700;
+    font-size: 0.88rem;
+    font-weight: 600;
   }
 
   span {
     display: block;
-    margin-top: 4px;
+    margin-top: 2px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
     color: var(--text-secondary);
-    font-size: 0.78rem;
+    font-size: 0.74rem;
   }
 }
 
@@ -415,47 +387,33 @@ onUnmounted(() => {
 }
 
 .row-action {
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.05);
+  border-radius: 999px;
+  border: none;
+  background: transparent;
   color: var(--text-secondary);
   font-size: 0.78rem;
   font-weight: 700;
   cursor: pointer;
-  transition: background 0.16s ease, color 0.16s ease, transform 0.16s ease;
+  transition: background 0.15s, color 0.15s;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.1);
-    color: var(--text-primary);
-    transform: translateY(-1px);
+    background: color-mix(in srgb, var(--primary-color) 14%, transparent);
+    color: var(--primary-color);
   }
 
   &--play {
-    background: var(--button-primary-gradient);
-    color: white;
-    border-color: transparent;
-    box-shadow: 0 4px 12px color-mix(in srgb, var(--primary-color) 18%, transparent);
-
-    &:hover {
-      color: white;
-    }
-  }
-
-  &--download {
-    background: var(--pill-success-bg);
-    border-color: var(--pill-success-border);
-    color: #baf7cd;
+    background: color-mix(in srgb, var(--primary-color) 16%, transparent);
+    color: var(--primary-color);
   }
 
   &:disabled {
-    opacity: 0.45;
+    opacity: 0.4;
     cursor: not-allowed;
-    transform: none;
   }
 }
 
@@ -466,18 +424,15 @@ onUnmounted(() => {
 }
 
 @container (max-width: 760px) {
-  .page-hero {
+  .leaderboard-header {
     flex-direction: column;
-  }
-
-  .hero-actions {
-    width: 100%;
+    align-items: flex-start;
   }
 
   .leader-row {
-    grid-template-columns: 44px minmax(0, 1fr);
-    gap: 12px;
-    padding: 12px 14px;
+    grid-template-columns: 40px minmax(0, 1fr);
+    gap: 10px;
+    padding: 8px 10px;
 
     .leader-row__actions {
       grid-column: 1 / -1;
@@ -487,45 +442,20 @@ onUnmounted(() => {
 }
 
 @container (max-width: 480px) {
-  .leaderboard-table {
-    gap: 6px;
-  }
-
   .leader-row {
-    grid-template-columns: 36px minmax(0, 1fr);
+    grid-template-columns: 32px minmax(0, 1fr);
     gap: 8px;
-    padding: 10px 12px;
-    border-radius: 14px;
-  }
+    padding: 8px;
 
-  .leader-row__rank {
-    font-size: 1.1rem;
-  }
-
-  .leader-row__meta {
-    strong {
-      font-size: 0.82rem;
-    }
-    span {
-      font-size: 0.72rem;
+    .leader-row__rank {
+      font-size: 0.9rem;
     }
   }
 
   .row-action {
-    width: 30px;
-    height: 30px;
-    font-size: 0.72rem;
-  }
-
-  .hero-actions {
-    width: 100%;
-    flex-direction: column;
-  }
-
-  .hero-action {
-    width: 100%;
-    text-align: center;
-    justify-content: center;
+    width: 28px;
+    height: 28px;
+    font-size: 0.7rem;
   }
 }
 </style>

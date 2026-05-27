@@ -1,14 +1,6 @@
 <template>
   <div class="song-list-page page-shell">
-    <section class="search-home glass-panel">
-      <div class="search-home__hero">
-        <div class="search-home__copy">
-          <span class="search-home__eyebrow app-pill accent compact">Playlist Search</span>
-          <h1>搜索歌单</h1>
-          <p>输入关键词后按渠道分组搜索公开歌单，当前优先接入网易云音乐和 QQ 音乐。</p>
-        </div>
-      </div>
-
+    <section class="search-home">
       <div class="search-home__toolbar">
         <div class="search-home__search-shell">
           <svg class="search-home__icon" viewBox="0 0 24 24" fill="currentColor">
@@ -24,7 +16,7 @@
           <button
             v-if="searchKeyword"
             type="button"
-            class="search-home__clear app-icon-button ghost compact"
+            class="search-home__clear"
             @click="handleClear"
           >
             <svg viewBox="0 0 24 24" fill="currentColor">
@@ -33,26 +25,21 @@
           </button>
         </div>
 
-        <button type="button" class="search-home__submit app-button accent" @click="handleSearchSubmit">
-          开始搜索
-        </button>
-      </div>
+        <NButton type="primary" size="small" round @click="handleSearchSubmit">开始搜索</NButton>
 
-      <section class="channel-tabs">
-        <button
-          v-for="option in PLAYLIST_CHANNEL_OPTIONS"
-          :key="option.value"
-          type="button"
-          :class="[
-            'channel-tabs__item',
-            'app-pill',
-            option.primary ? 'accent' : 'secondary',
-            { 'is-active': option.primary, 'is-disabled': !option.supported },
-          ]"
-        >
-          {{ option.label }}
-        </button>
-      </section>
+        <section class="channel-tabs channel-tabs--inline">
+          <NButton
+            v-for="option in PLAYLIST_CHANNEL_OPTIONS"
+            :key="option.value"
+            size="small"
+            round
+            :type="option.primary ? 'primary' : 'default'"
+            :disabled="!option.supported"
+          >
+            {{ option.label }}
+          </NButton>
+        </section>
+      </div>
     </section>
 
     <div
@@ -63,34 +50,7 @@
       {{ playlistNotice.message }}
     </div>
 
-    <section v-if="!activePlaylistSummary" class="playlist-results glass-panel section-card">
-      <header class="playlist-results__header">
-        <div>
-          <span class="playlist-results__eyebrow app-pill primary compact">分渠道结果</span>
-          <h2>搜索结果</h2>
-          <p>{{ searchSummary }}</p>
-        </div>
-        <div class="playlist-results__actions">
-          <div class="playlist-sort">
-            <button
-              v-for="option in SORT_OPTIONS"
-              :key="option.value"
-              type="button"
-              :class="[
-                'playlist-sort__item',
-                'app-pill',
-                selectedSort === option.value ? 'accent' : 'ghost',
-                { 'is-active': selectedSort === option.value },
-              ]"
-              @click="selectedSort = option.value"
-            >
-              {{ option.label }}
-            </button>
-          </div>
-          <span class="playlist-results__badge app-pill warning compact">{{ resultBadge }}</span>
-        </div>
-      </header>
-
+    <section v-if="!activePlaylistSummary" class="playlist-results">
       <div v-if="searchError" class="playlist-results__error">{{ searchError }}</div>
 
       <NEmpty v-if="!hasSearched && !isSearching" description="输入关键词后会按渠道分组展示歌单结果。" />
@@ -202,7 +162,7 @@
       </div>
     </section>
 
-    <section v-else class="playlist-detail glass-panel section-card">
+    <section v-else class="playlist-detail">
       <header class="playlist-detail__header">
         <button type="button" class="playlist-detail__back app-button secondary compact" @click="closePlaylistDetail">
           返回搜索结果
@@ -352,6 +312,7 @@
 
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import { NButton, NEmpty, NModal } from 'naive-ui'
 import { storeToRefs } from 'pinia'
 import FloatingMenu from '../components/context/FloatingMenu.vue'
@@ -403,6 +364,7 @@ const PLAYLIST_CHANNEL_OPTIONS = [
 
 const playerStore = usePlayerStore()
 const playlistStore = usePlaylistStore()
+const route = useRoute()
 const playlistSearchStore = usePlaylistSearchStore()
 const { downloadTrack } = useTrackDownload()
 const {
@@ -661,6 +623,7 @@ async function handleSearchSubmit() {
   isSearching.value = true
   searchError.value = ''
   playlistSearchStore.resetDetailState()
+  playlistSearchStore.addRecentKeyword(keyword)
 
   channelStates.value = createInitialPlaylistChannelStates()
 
@@ -1045,8 +1008,11 @@ watch(
 onMounted(() => {
   document.addEventListener('click', hideContextMenu)
 
-  // 首次打开且没有搜索过时，自动搜索默认关键词
-  if (!searchKeyword.value.trim()) {
+  const queryKeyword = route.query.q as string
+  if (queryKeyword) {
+    searchKeyword.value = queryKeyword
+    void handleSearchSubmit()
+  } else if (!searchKeyword.value.trim()) {
     searchKeyword.value = '热门歌单'
     void handleSearchSubmit()
   }
@@ -1083,84 +1049,32 @@ onUnmounted(() => {
 .search-home {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 0;
   padding: 12px 16px;
-  border-radius: var(--radius-md);
-  background: var(--panel-strong);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
-}
-
-.search-home__hero {
-  display: block;
-}
-
-.search-home__eyebrow {
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-
-.search-home__copy {
-  h1 {
-    margin-top: 6px;
-    font-size: clamp(1.52rem, 2.4vw, 2.08rem);
-    line-height: 1;
-    letter-spacing: -0.05em;
-  }
-
-  p {
-    max-width: 520px;
-    margin-top: 4px;
-    color: var(--text-secondary);
-    font-size: 0.76rem;
-    line-height: 1.45;
-  }
-}
-
-.playlist-results,
-.playlist-detail {
-  border-radius: var(--radius-md);
-  padding: 18px;
-}
-
-.playlist-results__eyebrow,
-.playlist-detail__eyebrow {
-  font-size: 0.72rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  flex-shrink: 0;
 }
 
 .search-home__toolbar {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
   align-items: center;
+}
+
+.channel-tabs--inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  flex: 0 0 auto;
 }
 
 .search-home__search-shell {
   position: relative;
-  min-height: 48px;
-  border-radius: 18px;
-  border: 1px solid var(--border-color);
+  flex: 1 1 240px;
+  min-height: 40px;
+  border-radius: 999px;
   background: var(--input-surface);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
   overflow: hidden;
-
-  :deep(.n-input) {
-    width: 100%;
-    height: 100%;
-    background: var(--input-surface);
-    border-radius: 18px;
-  }
-
-  :deep(.n-input:hover),
-  :deep(.n-input.n-input--focus) {
-    background: var(--input-surface-focus);
-  }
-
-  :deep(.n-input-wrapper) {
-    padding-left: 6px;
-    padding-right: 6px;
-  }
 }
 
 .search-home__icon {
@@ -1176,9 +1090,9 @@ onUnmounted(() => {
 
 .search-home__input {
   width: 100%;
-  min-height: 48px;
+  min-height: 40px;
   padding: 0 44px 0 44px;
-  border-radius: 18px;
+  border-radius: 999px;
   border: 1px solid rgba(255, 255, 255, 0.14);
   background: var(--input-surface);
   color: var(--text-primary);
@@ -1188,16 +1102,8 @@ onUnmounted(() => {
   &:focus {
     border-color: color-mix(in srgb, var(--primary-color) 42%, var(--border-light));
     background: var(--input-surface-focus);
-    box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary-color) 14%, transparent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-color) 14%, transparent);
   }
-}
-
-.search-home__clear,
-.search-home__submit,
-.playlist-detail__back,
-.playlist-detail__action {
-  border: none;
-  cursor: pointer;
 }
 
 .search-home__clear {
@@ -1205,6 +1111,10 @@ onUnmounted(() => {
   top: 50%;
   right: 14px;
   transform: translateY(-50%);
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--text-secondary);
 
   svg {
     width: 14px;
@@ -1214,25 +1124,18 @@ onUnmounted(() => {
 
 .search-home__submit {
   min-width: 112px;
-  min-height: 46px;
+  min-height: 40px;
 }
 
-.channel-tabs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+.playlist-results {
+  padding: 18px;
 }
 
-.channel-tabs__item {
-  font-size: 0.76rem;
-
-  &.is-active {
-    box-shadow: var(--button-accent-shadow);
-  }
-
-  &.is-disabled {
-    opacity: 0.45;
-  }
+.playlist-results__eyebrow,
+.playlist-detail__eyebrow {
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
 .playlist-notice,
@@ -1357,10 +1260,13 @@ onUnmounted(() => {
 }
 
 .playlist-group {
-  padding: 16px;
-  border-radius: 28px;
-  background: var(--panel-muted);
-  border: 1px solid var(--border-color);
+  padding: 8px 0 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+
+  &:first-child {
+    border-top: none;
+    padding-top: 0;
+  }
 
   p {
     margin-top: 4px;
@@ -1399,14 +1305,13 @@ onUnmounted(() => {
   text-align: left;
   padding: 0;
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 26px;
+  border-radius: 0;
   overflow: hidden;
   background: var(--liquid-content-surface);
   cursor: pointer;
-  transition: transform 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
 
   &:hover {
-    transform: translateY(-2px);
     border-color: var(--border-light);
     background: var(--panel-gradient);
   }
@@ -1687,37 +1592,10 @@ onUnmounted(() => {
   }
 }
 
-@media (max-width: 900px) {
+@media (max-width: 980px) {
   .search-home__toolbar {
-    grid-template-columns: 1fr;
-  }
-
-  .search-home__submit {
-    min-height: 50px;
-  }
-
-  .playlist-detail__hero {
-    grid-template-columns: 1fr;
-  }
-
-  .playlist-detail__cover-shell {
-    width: min(280px, 100%);
-  }
-}
-
-@media (max-width: 920px) {
-  .search-home__hero {
-    display: none;
-  }
-
-  .search-home {
-    padding: 8px 12px;
-    gap: 8px;
-  }
-
-  .search-home__toolbar {
-    grid-template-columns: minmax(0, 1fr) auto;
-    gap: 8px;
+    flex-direction: column;
+    align-items: stretch;
   }
 }
 </style>

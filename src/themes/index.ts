@@ -3,7 +3,7 @@
  * Matches lx-music-desktop theme system
  */
 
-export type ThemeColorType = 'green' | 'blue' | 'red' | 'pink' | 'purple' | 'orange' | 'black' | 'grey' | 'custom'
+export type ThemeColorType = 'indigo' | 'green' | 'blue' | 'red' | 'pink' | 'purple' | 'orange' | 'black' | 'grey' | 'custom'
 export type ThemeMode = 'light' | 'dark' | 'auto'
 
 export interface ThemeColors {
@@ -20,6 +20,16 @@ export interface Theme {
 }
 
 export const themes: Theme[] = [
+  {
+    id: 'indigo',
+    name: 'Indigo',
+    colors: {
+      primary: '#4338CA',
+      hover: '#6366F1',
+      active: '#3730A3',
+      light: '#e0e7ff'
+    }
+  },
   {
     id: 'green',
     name: 'Green',
@@ -105,7 +115,7 @@ export const themes: Theme[] = [
 export const getTheme = (id: ThemeColorType): Theme => {
   const theme = themes.find(t => t.id === id)
   if (!theme) {
-    return themes[0] // Default to green
+    return themes[0] // Default to indigo
   }
   return theme
 }

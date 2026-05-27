@@ -1,6 +1,6 @@
 <template>
   <div class="setting-page page-shell">
-    <div class="setting-toolbar glass-panel">
+    <div class="setting-toolbar">
       <NTabs v-model:value="activeTab" type="segment" size="small" class="setting-tabs">
         <NTab v-for="tab in tabs" :key="tab.key" :name="tab.key">
           {{ tab.label }}
@@ -46,7 +46,7 @@
     </div>
 
     <!-- Tab Content -->
-    <div class="tab-content glass-panel">
+    <div class="tab-content">
       <!-- Sources Tab -->
       <div v-if="activeTab === 'sources'" class="sources-section">
         <!-- 平台渠道 -->
@@ -1720,7 +1720,7 @@ onMounted(async () => {
   justify-content: space-between;
   gap: 14px;
   padding: 4px 2px;
-  border-radius: 20px;
+  border-radius: 0;
   background: transparent;
   box-shadow: none;
 }
@@ -1824,8 +1824,8 @@ onMounted(async () => {
   flex: 1;
   min-height: 0;
   padding: 18px 18px 8px;
-  border-radius: 22px;
-  background: var(--panel-gradient);
+  border-radius: 0;
+  background: transparent;
   overflow-y: auto;
 }
 

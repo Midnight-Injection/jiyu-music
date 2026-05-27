@@ -88,7 +88,7 @@
     &__cover--placeholder {
       display: grid;
       place-items: center;
-      background: linear-gradient(135deg, rgba(247, 232, 255, 0.34), rgba(196, 171, 245, 0.26));
+      background: linear-gradient(135deg, color-mix(in srgb, var(--primary-color) 34%, transparent), color-mix(in srgb, var(--secondary-color) 26%, transparent));
       color: var(--text-secondary);
     }
 

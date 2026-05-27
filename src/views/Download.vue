@@ -1,96 +1,60 @@
 <template>
   <div class="download-page page-shell">
-    <div class="download-content glass-panel">
+    <div class="download-content">
       <div class="queue-panel">
         <div class="queue-panel__head">
-          <div class="queue-panel__title">
-            <span class="queue-panel__eyebrow app-pill accent compact">Download Center</span>
+          <div class="queue-panel__info">
             <h1>下载管理</h1>
-            <p>集中管理当前任务、等待队列和失败重试，窗口缩小时会自动切换紧凑布局。</p>
+            <div class="queue-tabs">
+              <button
+                v-for="tab in tabs"
+                :key="tab.key"
+                type="button"
+                class="tab-pill"
+                :class="{ active: activeTab === tab.key }"
+                @click="activeTab = tab.key"
+              >
+                {{ tab.label }}
+                <span class="tab-count">{{ tab.count }}</span>
+              </button>
+            </div>
           </div>
           <div class="batch-actions">
-            <NButton size="small" :disabled="!hasActiveDownloads" @click="pauseAll">
+            <NButton size="small" secondary round :disabled="!hasActiveDownloads" @click="pauseAll">
               暂停全部
             </NButton>
-            <NButton size="small" type="primary" :disabled="!hasPausedDownloads" @click="resumeAll">
+            <NButton size="small" type="primary" round :disabled="!hasPausedDownloads" @click="resumeAll">
               继续全部
             </NButton>
             <NButton
               size="small"
               type="success"
+              secondary
+              round
               :disabled="!hasCompletedDownloads"
               @click="clearCompleted"
             >
               清除已完成
             </NButton>
-            <NButton size="small" type="error" :disabled="queue.length === 0" @click="clearAll">
+            <NButton size="small" type="error" secondary round :disabled="queue.length === 0" @click="clearAll">
               清空全部
             </NButton>
           </div>
         </div>
 
-        <NTabs v-model:value="activeTab" type="segment" size="small">
-          <NTabPane name="downloading" :tab="`下载中 (${downloadQueue.active.length})`">
-            <div class="queue-list">
-              <DownloadItem
-                v-for="item in currentList"
-                :key="item.id"
-                :item="item"
-                @pause="pauseDownload"
-                @resume="resumeDownload"
-                @cancel="cancelDownload"
-                @retry="retryDownload"
-                @openFolder="openFolder"
-              />
-              <NEmpty v-if="currentList.length === 0" description="暂无下载中的任务" />
-            </div>
-          </NTabPane>
-          <NTabPane name="pending" :tab="`等待中 (${downloadQueue.pending.length})`">
-            <div class="queue-list">
-              <DownloadItem
-                v-for="item in currentList"
-                :key="item.id"
-                :item="item"
-                @pause="pauseDownload"
-                @resume="resumeDownload"
-                @cancel="cancelDownload"
-                @retry="retryDownload"
-                @openFolder="openFolder"
-              />
-              <NEmpty v-if="currentList.length === 0" description="暂无等待中的任务" />
-            </div>
-          </NTabPane>
-          <NTabPane name="completed" :tab="`已完成 (${downloadQueue.completed.length})`">
-            <div class="queue-list">
-              <DownloadItem
-                v-for="item in currentList"
-                :key="item.id"
-                :item="item"
-                @pause="pauseDownload"
-                @resume="resumeDownload"
-                @cancel="cancelDownload"
-                @retry="retryDownload"
-                @openFolder="openFolder"
-              />
-              <NEmpty v-if="currentList.length === 0" description="暂无已完成的下载" />
-            </div>
-          </NTabPane>
-          <NTabPane name="failed" :tab="`失败 (${downloadQueue.failed.length})`">
-            <div class="queue-list">
-              <DownloadItem
-                v-for="item in currentList"
-                :key="item.id"
-                :item="item"
-                @pause="pauseDownload"
-                @resume="resumeDownload"
-                @cancel="cancelDownload"
-                @retry="retryDownload"
-                @openFolder="openFolder"
-              />
-              <NEmpty v-if="currentList.length === 0" description="暂无失败的下载" />
-            </div>
-          </NTabPane>
-        </NTabs>
+        <div class="queue-list">
+          <DownloadItem
+            v-for="item in currentList"
+            :key="item.id"
+            :item="item"
+            @pause="pauseDownload"
+            @resume="resumeDownload"
+            @cancel="cancelDownload"
+            @retry="retryDownload"
+            @openFolder="openFolder"
+          />
+          <NEmpty v-if="currentList.length === 0" description="暂无任务" />
+        </div>
 
         <div class="queue-summary">
           <div class="summary-item">
@@ -121,7 +85,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { NTabs, NTabPane, NButton, NEmpty } from 'naive-ui'
+import { NButton, NEmpty } from 'naive-ui'
 import { useDownloadStore } from '../store/download'
 import { useSettingsStore } from '../store/settings'
 import { invoke } from '@tauri-apps/api/core'
@@ -158,6 +122,13 @@ const hasActiveDownloads = computed(() => downloadQueue.value.active.length > 0)
 const hasPausedDownloads = computed(() => queue.value.some((d) => d.status === 'paused'))
 const hasCompletedDownloads = computed(() => downloadQueue.value.completed.length > 0)
 const maxConcurrentDownloads = computed(() => Math.max(1, settingsStore.settings.maxDownloads))
+
+const tabs = computed(() => [
+  { key: 'downloading' as const, label: '下载中', count: downloadQueue.value.active.length },
+  { key: 'pending' as const, label: '等待中', count: downloadQueue.value.pending.length },
+  { key: 'completed' as const, label: '已完成', count: downloadQueue.value.completed.length },
+  { key: 'failed' as const, label: '失败', count: downloadQueue.value.failed.length },
+])
 
 async function markTaskPending(id: number) {
   try {
@@ -376,149 +347,89 @@ onUnmounted(() => {
   .download-content {
     flex: 1 1 auto;
     min-height: 0;
+    height: 100%;
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    border-radius: var(--radius-md);
-    background: var(--panel-gradient);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
+    border-radius: 0;
+    background: transparent;
   }
 
   .queue-panel {
     flex: 1 1 auto;
     min-height: 0;
-    border-radius: var(--radius-md);
     display: flex;
     flex-direction: column;
     overflow: hidden;
 
+    h1 {
+      margin: 0;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      line-height: 1.2;
+    }
+
     .queue-panel__head {
       display: flex;
       justify-content: space-between;
-      align-items: flex-start;
-      gap: 14px;
-      padding: 18px 18px 14px;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
       border-bottom: 1px solid var(--border-color);
     }
 
-    .queue-panel__title {
+    .queue-panel__info {
       display: flex;
-      flex-direction: column;
-      gap: 8px;
+      align-items: center;
+      gap: 12px;
       min-width: 0;
+    }
 
-      p {
-        margin: 0;
-        color: var(--text-secondary);
-        font-size: 0.82rem;
-        line-height: 1.6;
-        max-width: 640px;
+    .queue-tabs {
+      display: flex;
+      gap: 6px;
+    }
+
+    .tab-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--border-color);
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: 0.78rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+
+      &:hover {
+        background: color-mix(in srgb, var(--primary-color) 8%, transparent);
+        border-color: color-mix(in srgb, var(--primary-color) 24%, transparent);
+        color: var(--text-primary);
       }
-    }
 
-    .queue-panel__eyebrow {
-      align-self: flex-start;
-    }
+      &.active {
+        background: color-mix(in srgb, var(--primary-color) 16%, transparent);
+        border-color: color-mix(in srgb, var(--primary-color) 40%, transparent);
+        color: var(--primary-color);
+      }
 
-    h1 {
-      margin: 0;
-      font-size: clamp(1.35rem, 2vw, 1.6rem);
-      color: var(--text-primary);
-      line-height: 1.05;
+      .tab-count {
+        font-variant-numeric: tabular-nums;
+        font-weight: 700;
+        font-size: 0.72rem;
+        opacity: 0.7;
+      }
     }
 
     .batch-actions {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
-      flex: 0 0 auto;
-    }
-
-    .queue-tabs {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      padding: 12px 14px 0;
-
-      .tab {
-        font-size: 14px;
-        flex: 0 0 auto;
-
-        &.active {
-          box-shadow: var(--button-accent-shadow);
-        }
-      }
-    }
-
-    .queue-summary {
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      gap: 2px;
-      padding: 10px 18px 14px;
-      border-top: 1px solid rgba(255, 255, 255, 0.06);
-    }
-
-    .summary-item {
-      display: flex;
-      align-items: center;
       gap: 6px;
-      padding: 5px 14px;
-      border-radius: 999px;
-      background: var(--pill-secondary-bg);
-      border: 1px solid var(--pill-secondary-border);
-
-      & + .summary-item {
-        margin-left: 2px;
-      }
-
-      &--active {
-        background: var(--pill-success-bg);
-        border-color: var(--pill-success-border);
-      }
-
-      &--pending {
-        background: var(--pill-warning-bg);
-        border-color: var(--pill-warning-border);
-      }
-
-      &--done {
-        background: rgba(34, 197, 94, 0.1);
-        border-color: rgba(74, 222, 128, 0.16);
-      }
-
-      &--failed {
-        background: var(--pill-danger-bg);
-        border-color: var(--pill-danger-border);
-      }
-    }
-
-    .summary-count {
-      font-size: 0.82rem;
-      font-weight: 700;
-      font-variant-numeric: tabular-nums;
-      color: var(--text-primary);
-    }
-
-    .summary-label {
-      font-size: 0.72rem;
-      color: var(--text-secondary);
-    }
-
-    .summary-item--active .summary-count {
-      color: #63e89b;
-    }
-
-    .summary-item--pending .summary-count {
-      color: #f0c060;
-    }
-
-    .summary-item--done .summary-count {
-      color: rgba(24, 160, 88, 0.8);
-    }
-
-    .summary-item--failed .summary-count {
-      color: #ff8d9e;
+      flex: 0 0 auto;
     }
 
     .queue-list {
@@ -527,122 +438,98 @@ onUnmounted(() => {
       display: flex;
       flex-direction: column;
       overflow-y: auto;
-      padding: 12px;
+      padding: 8px 10px;
 
       :deep(.n-empty) {
         flex: 1 1 0%;
-        min-height: 240px;
+        min-height: 200px;
         display: flex;
         align-items: center;
         justify-content: center;
-      }
-
-      .empty-state {
-        flex: 1;
-        text-align: center;
-        padding: 60px 20px;
-        color: var(--text-secondary);
-        font-size: 14px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 12px;
-
-        &::before {
-          content: '📥';
-          font-size: 48px;
-          opacity: 0.5;
-        }
       }
     }
-  }
 
-  .btn {
-    font-size: 14px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
+    .queue-summary {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 6px;
+      padding: 8px 14px 10px;
+      border-top: 1px solid var(--border-color);
+    }
 
-  @container (max-width: 1180px) {
-    .queue-panel {
-      .queue-panel__head {
-        flex-direction: column;
+    .summary-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 10px;
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--text-secondary) 8%, transparent);
+
+      &--active {
+        background: color-mix(in srgb, #22c55e 12%, transparent);
       }
 
-      .batch-actions {
-        width: 100%;
-        justify-content: flex-start;
+      &--pending {
+        background: color-mix(in srgb, #eab308 12%, transparent);
       }
+
+      &--done {
+        background: color-mix(in srgb, #22c55e 8%, transparent);
+      }
+
+      &--failed {
+        background: color-mix(in srgb, #ef4444 12%, transparent);
+      }
+    }
+
+    .summary-count {
+      font-size: 0.75rem;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      color: var(--text-primary);
+    }
+
+    .summary-label {
+      font-size: 0.68rem;
+      color: var(--text-secondary);
     }
   }
 
   @container (max-width: 960px) {
     .queue-panel {
       .queue-panel__head {
-        padding: 16px 14px 12px;
-      }
-
-      .queue-tabs,
-      .queue-summary {
-        padding-inline: 14px;
+        flex-direction: column;
+        align-items: flex-start;
       }
 
       .batch-actions {
         width: 100%;
-        justify-content: flex-start;
       }
     }
   }
 
   @container (max-width: 720px) {
     .queue-panel {
-      .queue-panel__title p {
-        font-size: 0.78rem;
+      .queue-tabs {
+        flex-wrap: nowrap;
+        overflow-x: auto;
       }
 
       .batch-actions {
         width: 100%;
-        justify-content: flex-start;
-      }
-
-      .queue-tabs {
-        flex-wrap: nowrap;
-        overflow-x: auto;
-        padding-bottom: 2px;
       }
 
       .queue-list {
-        padding: 10px;
+        padding: 6px 8px;
       }
     }
   }
 
-  @container (max-width: 560px) {
-    .queue-panel {
-      .queue-panel__head {
-        padding: 16px 14px 12px;
-      }
-
-      .queue-tabs,
-      .queue-summary {
-        padding-inline: 10px;
-      }
-
-      .queue-summary {
-        gap: 6px;
-      }
-
-      .btn {
-        width: 100%;
-      }
-    }
-  }
   @container (max-width: 480px) {
     .queue-panel {
       .queue-panel__head {
-        padding: 12px 10px 10px;
+        padding: 10px 10px;
       }
 
       .batch-actions {
@@ -650,7 +537,7 @@ onUnmounted(() => {
         flex-wrap: wrap;
 
         button {
-          flex: 1 1 calc(50% - 4px);
+          flex: 1 1 calc(50% - 3px);
           min-width: 0;
         }
       }
@@ -659,15 +546,11 @@ onUnmounted(() => {
         flex-wrap: wrap;
         justify-content: center;
         gap: 4px;
-        padding: 8px 10px 10px;
+        padding: 6px 10px 8px;
       }
 
       .summary-item {
-        padding: 4px 10px;
-      }
-
-      .queue-list {
-        padding: 8px;
+        padding: 2px 8px;
       }
     }
   }

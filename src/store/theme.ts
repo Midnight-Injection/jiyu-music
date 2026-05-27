@@ -30,15 +30,15 @@ export interface ThemeSettings {
 }
 
 const DEFAULT_THEME: ThemeSettings = {
-  themeColor: 'green',
+  themeColor: 'indigo',
   themeMode: 'auto',
-  customColor: '#1db954',
+  customColor: '#4338CA',
   fontFamilyPreset: 'system',
   textColorPrimary: '#f7fbff',
   textColorSecondary: '#dbe5f3',
   baseplateStyle: 'linear-gradient',
-  baseplateColorA: '#102038',
-  baseplateColorB: '#415b86',
+  baseplateColorA: '#0F0F23',
+  baseplateColorB: '#1E1B4B',
   baseplateAngle: 140,
   baseplateIntensity: 78,
   baseplateUseThemeAccent: false,

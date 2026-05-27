@@ -105,7 +105,8 @@ const pageMotion = computed(() => {
 
 <style scoped lang="scss">
 .app-layout-shell {
-  --app-layout-shell-panel-radius: var(--window-frame-radius, var(--radius-lg));
+  --app-layout-shell-panel-radius: var(--window-frame-radius, var(--radius-md));
+  --panel-r: 0px;
   width: 100%;
   height: 100%;
   min-height: 0;
@@ -117,7 +118,7 @@ const pageMotion = computed(() => {
   grid-template-areas:
     'sidebar main rail'
     'sidebar player rail';
-  gap: 10px;
+  gap: 1px;
 }
 
 .app-layout-shell--no-rail {
@@ -154,6 +155,11 @@ const pageMotion = computed(() => {
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
   overflow: hidden;
+  border-radius: 0;
+  background:
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.08), transparent 26%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.025));
+  backdrop-filter: blur(18px);
 }
 
 .app-layout-shell__main--immersive {
@@ -170,7 +176,6 @@ const pageMotion = computed(() => {
   min-height: 0;
   overflow: auto;
   overscroll-behavior: contain;
-  padding-bottom: 10px;
 }
 
 .app-layout-shell__content--immersive {
@@ -187,12 +192,12 @@ const pageMotion = computed(() => {
 }
 
 .app-layout-shell__player-slot {
-  --player-bar-radius: var(--app-layout-shell-panel-radius);
+  --player-bar-radius: 0;
   grid-area: player;
   min-width: 0;
   min-height: 0;
   overflow: hidden;
-  border-radius: var(--app-layout-shell-panel-radius);
+  border-radius: 0 0 0 0;
   z-index: 8;
 }
 
@@ -254,7 +259,7 @@ const pageMotion = computed(() => {
       'sidebar'
       'main'
       'player';
-    gap: 6px;
+    gap: 1px;
   }
 
   .app-layout-shell--no-player:not(.app-layout-shell--mobile),
@@ -278,7 +283,7 @@ const pageMotion = computed(() => {
     grid-template-areas:
       'sidebar main'
       'sidebar player';
-    gap: 16px;
+    gap: 1px;
   }
 
   .app-layout-shell--no-player,
@@ -291,12 +296,10 @@ const pageMotion = computed(() => {
   }
 
   .app-layout-shell__player-slot {
-    border-radius: var(--radius-lg);
-    box-shadow: none;
+    border-radius: 0;
   }
 
   .app-layout-shell__content {
-    padding-bottom: 20px;
     box-shadow: none;
   }
 

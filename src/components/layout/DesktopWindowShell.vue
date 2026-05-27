@@ -377,7 +377,7 @@ onUnmounted(() => {
 
 <style scoped lang="scss">
 .desktop-window-shell {
-  --window-frame-radius: 24px;
+  --window-frame-radius: 10px;
   --window-frame-border-color: var(--shell-border);
   --window-frame-border-width: 1px;
   --window-resize-hit-size: 8px;
@@ -452,11 +452,12 @@ onUnmounted(() => {
   height: 100%;
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
-  gap: 10px;
-  padding: 10px;
+  gap: 0;
+  padding: 0;
   min-height: 0;
   overflow: hidden;
   border-radius: inherit;
+  background: var(--bg-primary);
 }
 
 .desktop-window-shell__frame::before {
@@ -482,8 +483,9 @@ onUnmounted(() => {
   min-width: 0;
   min-height: 52px;
   padding: 0 14px;
-  border-radius: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 0;
+  border: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   background: var(--panel-muted);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.18),

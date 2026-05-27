@@ -3,6 +3,7 @@ export type WindowSize = 'small' | 'medium' | 'large' | 'custom'
 export type PlayMode = 'loop' | 'single' | 'random'
 export type AudioQuality = 'standard' | 'high' | 'lossless'
 export type ThemeColorType =
+  | 'indigo'
   | 'green'
   | 'blue'
   | 'red'

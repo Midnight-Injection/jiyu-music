@@ -59,6 +59,7 @@ export const useSearchStore = defineStore('search', () => {
   const hasResults = computed(() => searchResults.value.length > 0)
   const canLoadMore = computed(() => hasNextPage.value)
   const canGoPrev = computed(() => currentPage.value > 1)
+  const totalPages = computed(() => Math.ceil(totalCount.value / pageSize) || 1)
   const aggregateSummary = computed(() => {
     const channels = Object.values(aggregateProgress.value)
     const totalChannels = channels.length
@@ -264,6 +265,7 @@ export const useSearchStore = defineStore('search', () => {
     hasResults,
     canLoadMore,
     canGoPrev,
+    totalPages,
     clearResults,
     cancelActiveSearch,
     beginSearch,

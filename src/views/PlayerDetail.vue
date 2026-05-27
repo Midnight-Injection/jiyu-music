@@ -68,7 +68,7 @@
           </div>
         </aside>
 
-        <section class="lyrics-stage glass-panel">
+        <section class="lyrics-stage">
           <div class="section-head section-head--lyrics">
             <div>
               <p class="section-head__eyebrow">歌词</p>
@@ -103,7 +103,7 @@
           </div>
         </section>
 
-        <aside class="queue-stage glass-panel">
+        <aside class="queue-stage">
           <div class="section-head">
             <div>
               <p class="section-head__eyebrow">队列</p>
@@ -150,7 +150,7 @@
         </aside>
       </section>
 
-      <section class="controls-strip glass-panel">
+      <section class="controls-strip">
         <div class="progress-container">
           <span class="time-label">{{ formatTime(player.currentTime) }}</span>
           <div
@@ -526,7 +526,7 @@ onUnmounted(() => {
   overflow: hidden;
   color: var(--text-primary);
   background: transparent;
-  border-radius: calc(var(--radius-lg) + 6px);
+  border-radius: 0;
   isolation: isolate;
 }
 
@@ -566,9 +566,7 @@ onUnmounted(() => {
 
 .glass-panel {
   border: 1px solid var(--border-color);
-  background: var(--panel-gradient);
-  box-shadow: var(--panel-shadow-soft);
-  backdrop-filter: var(--glass-blur);
+  background: transparent;
 }
 
 .detail-topbar {
@@ -576,13 +574,11 @@ onUnmounted(() => {
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   gap: 16px;
-  min-height: 56px;
-  padding: 10px 14px;
-  border-radius: 22px;
-  border: 1px solid var(--border-color);
-  background:
-    radial-gradient(circle at top right, color-mix(in srgb, var(--primary-color) 10%, transparent), transparent 30%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.04));
+  min-height: 48px;
+  padding: 8px 12px;
+  border-radius: 0;
+  border-bottom: 1px solid var(--border-color);
+  background: transparent;
   cursor: grab;
 
   &:active {

@@ -1,14 +1,6 @@
 <template>
   <div class="search-page page-shell">
-    <section class="search-home glass-panel">
-      <div class="search-home__hero">
-        <div class="search-home__copy">
-          <span class="search-home__eyebrow app-pill accent compact">Search Home</span>
-          <h1>搜索歌曲</h1>
-          <p>输入关键词后直接搜索、试听，并加入当前播放队列或歌单。</p>
-        </div>
-      </div>
-
+    <section class="search-home">
       <div class="search-home__toolbar">
         <div class="search-home__search-shell">
           <NInput
@@ -35,22 +27,22 @@
           </NInput>
         </div>
 
-        <NButton type="primary" round @click="handleSearchSubmit">开始搜索</NButton>
-      </div>
+        <NButton type="primary" size="small" round @click="handleSearchSubmit">搜索</NButton>
 
-      <section class="channel-tabs">
-        <NButton
-          v-for="option in PLATFORM_SOURCE_OPTIONS"
-          :key="option.value"
-          size="small"
-          round
-          :type="selectedChannel === option.value ? 'primary' : 'default'"
-          :disabled="!availableChannelSet.has(option.value)"
-          @click="handleChannelChange(option.value)"
-        >
-          {{ option.label }}
-        </NButton>
-      </section>
+        <section class="channel-tabs channel-tabs--inline">
+          <NButton
+            v-for="option in PLATFORM_SOURCE_OPTIONS"
+            :key="option.value"
+            size="small"
+            round
+            :type="selectedChannel === option.value ? 'primary' : 'default'"
+            :disabled="!availableChannelSet.has(option.value)"
+            @click="handleChannelChange(option.value)"
+          >
+            {{ option.label }}
+          </NButton>
+        </section>
+      </div>
     </section>
 
     <section class="search-results">
@@ -69,15 +61,7 @@
         {{ playlistNotice.message }}
       </NAlert>
 
-      <div class="results-container glass-panel section-card">
-        <div class="results-header">
-          <div>
-            <span class="results-count">搜索结果</span>
-            <p class="results-subtitle">{{ resultsSubtitle }}</p>
-          </div>
-          <span class="results-badge app-pill primary compact">{{ resultsBadge }}</span>
-        </div>
-
+      <div class="results-container">
         <div v-if="hasResults" class="results-columns">
           <span>#</span>
           <span>Title</span>
@@ -119,8 +103,10 @@
             >
               上一页
             </NButton>
-            <span class="pagination-status" :class="{ 'is-loading': isLoadingMore }">
-              {{ isLoadingMore ? '切换中...' : `第 ${currentPage} 页` }}
+            <span class="pagination-info">
+              <span class="pagination-info__current">{{ currentPage }}</span>
+              <span class="pagination-info__sep">/</span>
+              <span class="pagination-info__total">{{ totalPages }}</span>
             </span>
             <NButton
               size="small"
@@ -286,6 +272,7 @@ const hasResults = computed(() => searchStore.hasResults)
 const canGoNext = computed(() => searchStore.canLoadMore)
 const canGoPrev = computed(() => searchStore.canGoPrev)
 const currentPage = computed(() => searchStore.currentPage)
+const totalPages = computed(() => searchStore.totalPages)
 const totalCount = computed(() => searchStore.totalCount)
 const searchError = computed(() => searchStore.currentError)
 const aggregateSummary = computed(() => searchStore.aggregateSummary)
@@ -657,17 +644,9 @@ watch(
   { immediate: true }
 )
 
-const DEFAULT_SEARCH_KEYWORD = '热门歌曲'
-
 onMounted(async () => {
   document.addEventListener('click', hideContextMenu)
   await refreshAvailableChannels()
-
-  // 首次打开且没有关键词时，自动搜索默认关键词
-  if (!searchKeyword.value.trim()) {
-    searchKeyword.value = DEFAULT_SEARCH_KEYWORD
-    await handleSearch()
-  }
 })
 
 onUnmounted(() => {
@@ -699,59 +678,35 @@ onUnmounted(() => {
   flex-direction: column;
   gap: 10px;
   padding: 12px 16px;
-  border-radius: var(--radius-md);
-  background: var(--panel-strong);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
   flex-shrink: 0;
 }
 
-.search-home__hero {
-  display: block;
-}
-
-.search-home__eyebrow {
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-
-.search-home__copy {
-  h1 {
-    margin-top: 6px;
-    font-size: clamp(1.52rem, 2.4vw, 2.08rem);
-    line-height: 1;
-    letter-spacing: -0.05em;
-  }
-
-  p {
-    max-width: 520px;
-    margin-top: 4px;
-    color: var(--text-secondary);
-    font-size: 0.76rem;
-    line-height: 1.45;
-  }
-}
-
 .search-home__toolbar {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
   align-items: center;
+}
+
+.channel-tabs--inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  flex: 0 0 auto;
 }
 
 .search-home__search-shell {
   position: relative;
-  min-height: 48px;
-  border-radius: 18px;
-  border: 1px solid var(--border-color);
+  flex: 1 1 240px;
+  min-height: 40px;
+  border-radius: 999px;
   background: var(--input-surface);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
   overflow: hidden;
 
   :deep(.n-input) {
     width: 100%;
     height: 100%;
     background: var(--input-surface);
-    border-radius: 18px;
   }
 
   :deep(.n-input:hover),
@@ -783,9 +738,8 @@ onUnmounted(() => {
 
 .search-home__input {
   width: 100%;
-  min-height: 48px;
+  min-height: 40px;
   padding: 0 44px 0 44px;
-  border-radius: 18px;
   border: 1px solid rgba(255, 255, 255, 0.14);
   background: var(--input-surface);
   color: var(--text-primary);
@@ -795,7 +749,7 @@ onUnmounted(() => {
   &:focus {
     border-color: color-mix(in srgb, var(--primary-color) 42%, var(--border-light));
     background: var(--input-surface-focus);
-    box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary-color) 14%, transparent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-color) 14%, transparent);
   }
 }
 
@@ -845,11 +799,9 @@ onUnmounted(() => {
 
 .search-error,
 .playlist-notice {
-  padding: 12px 14px;
-  border-radius: 16px;
-  font-size: 0.86rem;
+  padding: 10px 14px;
+  font-size: 0.84rem;
   font-weight: 600;
-  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .search-error {
@@ -875,8 +827,7 @@ onUnmounted(() => {
 }
 
 .results-container {
-  padding: 16px 18px 14px;
-  border-radius: var(--radius-md);
+  padding: 12px 14px 8px;
   flex: 1 1 0%;
   min-height: 0;
   display: flex;
@@ -915,7 +866,7 @@ onUnmounted(() => {
   grid-template-columns: 40px minmax(0, 1.5fr) minmax(0, 1fr) minmax(120px, 0.9fr) 56px;
   gap: 12px;
   align-items: center;
-  padding: 10px 14px 8px;
+  padding: 10px 0 8px;
   color: var(--text-tertiary);
   font-size: 0.66rem;
   letter-spacing: 0.16em;
@@ -931,7 +882,6 @@ onUnmounted(() => {
   flex: 1 1 0%;
   min-height: 0;
   overflow-y: auto;
-  padding-right: 4px;
 }
 
 .song-motion-item + .song-motion-item {
@@ -953,22 +903,38 @@ onUnmounted(() => {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 10px;
-  padding-top: 14px;
+  gap: 12px;
+  padding: 10px 0 0;
   flex-shrink: 0;
 }
 
 .pagination-btn {
-  min-width: 92px;
+  min-width: 72px;
 }
 
-.pagination-status {
+.pagination-info {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 2px;
+  font-size: 0.82rem;
+  font-weight: 600;
   color: var(--text-secondary);
-  font-size: 0.76rem;
+  min-width: 48px;
+  justify-content: center;
+}
 
-  &.is-loading {
-    color: var(--text-primary);
-  }
+.pagination-info__current {
+  color: var(--text-primary);
+  font-size: 0.92rem;
+}
+
+.pagination-info__sep {
+  color: var(--text-tertiary);
+  margin: 0 2px;
+}
+
+.pagination-info__total {
+  color: var(--text-tertiary);
 }
 
 .spinner {
@@ -1062,7 +1028,12 @@ onUnmounted(() => {
 
 @media (max-width: 980px) {
   .search-home__toolbar {
-    grid-template-columns: 1fr;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .channel-tabs--inline {
+    justify-content: flex-start;
   }
 }
 
@@ -1085,27 +1056,21 @@ onUnmounted(() => {
 }
 
 @media (max-width: 920px) {
-  .search-home__hero {
-    display: none;
-  }
-
   .search-home {
     padding: 8px 12px;
     gap: 8px;
   }
 
   .search-home__toolbar {
-    grid-template-columns: minmax(0, 1fr) auto;
-    gap: 8px;
+    gap: 6px;
   }
 
   .search-home__search-shell {
-    min-height: 38px;
-    border-radius: 12px;
+    min-height: 36px;
   }
 
-  .channel-tabs {
-    gap: 6px;
+  .channel-tabs--inline {
+    gap: 4px;
   }
 
   .results-columns {

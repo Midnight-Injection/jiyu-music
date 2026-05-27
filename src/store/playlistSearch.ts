@@ -11,6 +11,22 @@ import type {
 export type PlaylistChannelStatus = 'idle' | 'loading' | 'success' | 'empty' | 'unsupported' | 'error'
 export type PlaylistSortOption = 'relevance' | 'plays' | 'time'
 
+const RECENT_KEYWORDS_KEY = 'playlist_recent_keywords'
+const MAX_RECENT = 12
+
+function loadRecentKeywords(): string[] {
+  try {
+    const raw = localStorage.getItem(RECENT_KEYWORDS_KEY)
+    return raw ? JSON.parse(raw) : []
+  } catch {
+    return []
+  }
+}
+
+function saveRecentKeywords(keywords: string[]) {
+  localStorage.setItem(RECENT_KEYWORDS_KEY, JSON.stringify(keywords))
+}
+
 export interface PlaylistChannelState {
   status: PlaylistChannelStatus
   items: SourcePlaylistSummary[]
@@ -45,6 +61,7 @@ export const usePlaylistSearchStore = defineStore('playlistSearch', () => {
   const detailHasMoreTracks = ref(false)
   const detailError = ref('')
   const playlistTracks = ref<MusicInfo[]>([])
+  const recentKeywords = ref<string[]>(loadRecentKeywords())
 
   function resetDetailState() {
     activePlaylistSummary.value = null
@@ -67,6 +84,21 @@ export const usePlaylistSearchStore = defineStore('playlistSearch', () => {
     resetDetailState()
   }
 
+  function addRecentKeyword(keyword: string) {
+    const normalized = keyword.trim()
+    if (!normalized) return
+    recentKeywords.value = [
+      normalized,
+      ...recentKeywords.value.filter((item) => item !== normalized),
+    ].slice(0, MAX_RECENT)
+    saveRecentKeywords(recentKeywords.value)
+  }
+
+  function clearRecentKeywords() {
+    recentKeywords.value = []
+    saveRecentKeywords([])
+  }
+
   return {
     searchKeyword,
     selectedSort,
@@ -82,7 +114,10 @@ export const usePlaylistSearchStore = defineStore('playlistSearch', () => {
     detailHasMoreTracks,
     detailError,
     playlistTracks,
+    recentKeywords,
     resetDetailState,
     resetSearchState,
+    addRecentKeyword,
+    clearRecentKeywords,
   }
 })

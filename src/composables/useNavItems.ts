@@ -15,11 +15,11 @@ const navItems: NavItem[] = [
     label: '歌单',
     icon: 'M5 6.5h14M5 12h14M5 17.5h9M17 16V8l4 2.25V18L17 16Z',
   },
-  {
-    path: '/leaderboard',
-    label: '榜单',
-    icon: 'M6 18.5h12M8 18.5V11m4 7.5V6m4 12.5v-9',
-  },
+  // {
+  //   path: '/leaderboard',
+  //   label: '榜单',
+  //   icon: 'M6 18.5h12M8 18.5V11m4 7.5V6m4 12.5v-9',
+  // },
   {
     path: '/list',
     label: '我的歌单',
@@ -37,13 +37,12 @@ const navItems: NavItem[] = [
   },
 ]
 
-// 移动端底部 Tab 用的精简导航项（5个主tab）
 const mobileTabItems: NavItem[] = [
   navItems[0], // 搜索
   navItems[1], // 歌单
-  navItems[2], // 榜单
-  navItems[3], // 我的歌单
-  navItems[5], // 设置
+  navItems[2], // 我的歌单
+  navItems[3], // 下载
+  navItems[4], // 设置
 ]
 
 export function useNavItems() {

@@ -102,10 +102,10 @@ img {
   justify-content: space-between;
   gap: 16px;
   padding: 22px 24px;
-  border-radius: var(--radius-md);
-  background: var(--panel-strong);
-  border: 1px solid var(--border-color);
-  box-shadow: var(--inset-highlight-strong);
+  border-radius: 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
 }
 
 .page-title {
@@ -136,11 +136,11 @@ img {
 }
 
 .section-card {
-  border-radius: var(--radius-md);
+  border-radius: 0;
   padding: 16px;
-  background: var(--panel-gradient);
-  border: 1px solid var(--border-color);
-  box-shadow: var(--inset-highlight);
+  background: transparent;
+  border: none;
+  box-shadow: none;
 }
 
 .page-kicker {

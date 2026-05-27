@@ -4,22 +4,12 @@
     class="playlist-page page-shell"
     :class="{ 'playlist-page--mobile-tracks': isMobileTrackLayout }"
   >
-    <aside class="playlist-sidebar glass-panel">
+    <aside class="playlist-sidebar">
       <div class="playlist-sidebar__header">
-        <div>
-          <span class="playlist-sidebar__kicker">Library</span>
-          <h1>我的歌单</h1>
-          <p>{{ playlistStore.playlists.length }} 个歌单，{{ totalTrackCount }} 首歌曲</p>
-        </div>
+        <p>{{ playlistStore.playlists.length }} 个歌单，{{ totalTrackCount }} 首歌曲</p>
         <div class="playlist-sidebar__actions">
-          <NButton size="small" round secondary @click="openImportDialog" title="导入外部歌单">
-            <span>↳</span>
-            <span>导入</span>
-          </NButton>
-          <NButton type="primary" size="small" round @click="showCreateDialog = true" title="创建新歌单">
-            <span>+</span>
-            <span>新建</span>
-          </NButton>
+          <NButton size="small" round secondary @click="openImportDialog" title="导入外部歌单">导入</NButton>
+          <NButton type="primary" size="small" round @click="showCreateDialog = true" title="创建新歌单">新建</NButton>
         </div>
       </div>
 
@@ -59,14 +49,13 @@
         {{ operationNotice.message }}
       </div>
 
-      <section v-if="currentPlaylist" class="playlist-workbench glass-panel">
+      <section v-if="currentPlaylist" class="playlist-workbench">
         <div class="playlist-hero">
           <div class="playlist-hero__cover">
             <div class="playlist-hero__icon">{{ getPlaylistIcon(currentPlaylist) }}</div>
           </div>
 
           <div class="playlist-hero__meta">
-            <span class="playlist-hero__kicker">{{ getPlaylistTypeLabel(currentPlaylist) }}</span>
             <h2 :title="currentPlaylist.name">{{ currentPlaylist.name }}</h2>
             <p :title="getPlaylistDescription(currentPlaylist)">{{ getPlaylistDescription(currentPlaylist) }}</p>
 
@@ -1012,8 +1001,6 @@ onUnmounted(() => {
   }
 }
 
-.playlist-sidebar,
-.playlist-workbench,
 .dialog,
 .floating-menu {
   backdrop-filter: blur(22px);
@@ -1023,24 +1010,21 @@ onUnmounted(() => {
 .playlist-sidebar {
   display: flex;
   flex-direction: column;
-  padding: 16px 10px;
-  border-radius: var(--radius-md);
+  padding: 12px 16px;
   max-height: 100%;
   min-height: 0;
   overflow: hidden;
-  background: var(--panel-strong);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), var(--shadow-md);
 }
 
 .playlist-sidebar__header {
   display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
   margin-bottom: 12px;
 
   h1 {
-    margin: 4px 0 3px;
+    margin: 0;
     font-size: 0.92rem;
     color: var(--text-primary);
     line-height: 1.1;
@@ -1057,6 +1041,7 @@ onUnmounted(() => {
   display: inline-flex;
   gap: 8px;
   align-items: center;
+  margin-left: auto;
 }
 
 .playlist-sidebar__kicker,
@@ -1186,7 +1171,6 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   overflow: visible;
-  border-radius: var(--radius-md);
 }
 
 .playlist-notice {
@@ -1348,7 +1332,7 @@ onUnmounted(() => {
 .playlist-hero__stats {
   display: flex;
   gap: 8px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   margin-top: 12px;
 }
 
@@ -1899,11 +1883,12 @@ onUnmounted(() => {
 
   .playlist-sidebar__header {
     flex-direction: column;
-    align-items: stretch;
+    align-items: flex-start;
   }
 
   .playlist-sidebar__actions {
     justify-content: flex-start;
+    margin-left: 0;
   }
 
   .playlist-hero {
